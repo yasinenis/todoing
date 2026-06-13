@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npm config *)",
+      "Bash(npx tsc *)",
+      "Bash(node -p \"require\\('./node_modules/vite-plugin-pwa/package.json'\\).version\")",
+      "Bash(node -p \"require\\('./node_modules/workbox-build/package.json'\\).version\")",
+      "Bash(npm view *)",
+      "Bash(tail -30 /home/yasin/.npm/_logs/2026-06-13T12_35_02_152Z-debug-0.log)",
+      "Read(//home/yasin/.npm/_logs/**)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}

@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Pastel & yumuşak — Açık tema */
+    --background: 280 40% 99%;
+    --foreground: 260 25% 22%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 260 25% 22%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 260 25% 22%;
+
+    --primary: 255 70% 72%;
+    --primary-foreground: 255 60% 99%;
+
+    --secondary: 280 45% 95%;
+    --secondary-foreground: 260 30% 30%;
+
+    --muted: 280 30% 95%;
+    --muted-foreground: 260 12% 50%;
+
+    --accent: 330 70% 92%;
+    --accent-foreground: 330 40% 35%;
+
+    --destructive: 0 72% 68%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 150 50% 60%;
+    --success-foreground: 150 40% 98%;
+
+    --border: 280 25% 90%;
+    --input: 280 25% 90%;
+    --ring: 255 70% 72%;
+
+    --radius: 1rem;
+
+    /* Grafik renkleri (pastel) */
+    --chart-1: 255 70% 72%;
+    --chart-2: 330 70% 78%;
+    --chart-3: 190 65% 65%;
+    --chart-4: 40 85% 70%;
+    --chart-5: 150 50% 65%;
+  }
+
+  .dark {
+    /* Pastel & yumuşak — Koyu tema */
+    --background: 260 25% 12%;
+    --foreground: 280 25% 92%;
+
+    --card: 260 22% 16%;
+    --card-foreground: 280 25% 92%;
+
+    --popover: 260 22% 16%;
+    --popover-foreground: 280 25% 92%;
+
+    --primary: 255 70% 74%;
+    --primary-foreground: 260 30% 14%;
+
+    --secondary: 260 18% 22%;
+    --secondary-foreground: 280 20% 88%;
+
+    --muted: 260 16% 22%;
+    --muted-foreground: 270 12% 65%;
+
+    --accent: 330 30% 28%;
+    --accent-foreground: 330 60% 88%;
+
+    --destructive: 0 60% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 150 45% 55%;
+    --success-foreground: 150 40% 98%;
+
+    --border: 260 16% 26%;
+    --input: 260 16% 26%;
+    --ring: 255 70% 74%;
+
+    --chart-1: 255 70% 74%;
+    --chart-2: 330 65% 74%;
+    --chart-3: 190 60% 62%;
+    --chart-4: 40 80% 66%;
+    --chart-5: 150 50% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* iOS güvenli alan dolguları (PWA) */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* İnce kaydırma çubuğu */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
