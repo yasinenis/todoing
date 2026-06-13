@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
@@ -15,8 +15,9 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { session } = useAuth();
+  const navigate = useNavigate();
 
-  // Oturum açıksa (giriş/kayıt başarılı ya da zaten girişli) panele yönlendir.
+  // Zaten girişliyse panele yönlendir.
   if (session) return <Navigate to="/" replace />;
 
   const submit = async (e: React.FormEvent) => {
@@ -29,13 +30,19 @@ export function LoginPage() {
           password,
         });
         if (error) throw error;
+        navigate("/", { replace: true });
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        toast.success(
-          "Kayıt oluşturuldu! E-postanı doğrulaman gerekebilir, sonra giriş yap.",
-        );
-        setMode("signin");
+        if (data.session) {
+          // E-posta onayı kapalıysa kayıt sonrası direkt oturum açılır.
+          navigate("/", { replace: true });
+        } else {
+          toast.success(
+            "Kayıt oluşturuldu! E-postanı doğrulaman gerekebilir, sonra giriş yap.",
+          );
+          setMode("signin");
+        }
       }
     } catch (err) {
       toast.error(
