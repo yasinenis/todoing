@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { requireUserId } from "@/lib/auth-helpers";
 import { qk } from "@/lib/query-keys";
@@ -84,6 +85,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     [qc],
   );
 
+  /** activeTimer cache'ini anlık (optimistic) günceller. */
+  const setActive = useCallback(
+    (next: Timer | null) => qc.setQueryData(qk.activeTimer, next),
+    [qc],
+  );
+
   /** Aktif oturumu time_entries'e yazar (task total_seconds trigger ile güncellenir). */
   const commitSession = useCallback(
     async (timer: Timer, at: number, userId: string) => {
@@ -105,26 +112,38 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  /** Geçerli sayaç durumunu cache'ten okur (optimistic güncellemeler dahil). */
+  const readActive = useCallback(
+    () => qc.getQueryData<Timer | null>(qk.activeTimer) ?? null,
+    [qc],
+  );
+
   const start = useCallback(
     async (taskId: string) => {
+      const current = readActive();
+      const at = Date.now();
+      const sameTask = current?.task_id === taskId;
+      const iso = new Date(at).toISOString();
+      // Anlık (optimistic) güncelleme — arayüz beklemeden tepki versin.
+      setActive({
+        id: current?.id ?? "optimistic",
+        user_id: current?.user_id ?? "",
+        task_id: taskId,
+        running: true,
+        started_at: iso,
+        accumulated_seconds: sameTask ? current!.accumulated_seconds : 0,
+        updated_at: iso,
+      });
       setIsPending(true);
       try {
         const userId = await requireUserId();
-        const current = activeTimer;
-        const at = Date.now();
-        // Başka bir görev aktifse onun oturumunu kaydet (tek aktif sayaç).
         if (current?.task_id && current.task_id !== taskId) {
           await commitSession(current, at, userId);
         }
-        if (current?.task_id === taskId) {
-          // Aynı görev → kaldığı yerden devam et.
+        if (sameTask) {
           const { error } = await supabase
             .from("timers")
-            .update({
-              running: true,
-              started_at: new Date(at).toISOString(),
-              updated_at: new Date(at).toISOString(),
-            })
+            .update({ running: true, started_at: iso, updated_at: iso })
             .eq("user_id", userId);
           if (error) throw error;
         } else {
@@ -133,29 +152,42 @@ export function TimerProvider({ children }: { children: ReactNode }) {
               user_id: userId,
               task_id: taskId,
               running: true,
-              started_at: new Date(at).toISOString(),
+              started_at: iso,
               accumulated_seconds: 0,
-              updated_at: new Date(at).toISOString(),
+              updated_at: iso,
             },
             { onConflict: "user_id" },
           );
           if (error) throw error;
         }
         invalidate(true);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Sayaç başlatılamadı.",
+        );
+        invalidate(); // sunucudan gerçek durumu çek (geri al)
       } finally {
         setIsPending(false);
       }
     },
-    [activeTimer, commitSession, invalidate],
+    [readActive, setActive, commitSession, invalidate],
   );
 
   const pause = useCallback(async () => {
-    if (!activeTimer?.running) return;
+    const current = readActive();
+    if (!current?.running) return;
+    const at = Date.now();
+    const accumulated = Math.round(liveElapsedSeconds(current, at));
+    setActive({
+      ...current,
+      running: false,
+      started_at: null,
+      accumulated_seconds: accumulated,
+      updated_at: new Date(at).toISOString(),
+    });
     setIsPending(true);
     try {
       const userId = await requireUserId();
-      const at = Date.now();
-      const accumulated = Math.round(liveElapsedSeconds(activeTimer, at));
       const { error } = await supabase
         .from("timers")
         .update({
@@ -167,39 +199,53 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         .eq("user_id", userId);
       if (error) throw error;
       invalidate();
-    } finally {
-      setIsPending(false);
-    }
-  }, [activeTimer, invalidate]);
-
-  const resume = useCallback(async () => {
-    if (!activeTimer?.task_id || activeTimer.running) return;
-    setIsPending(true);
-    try {
-      const userId = await requireUserId();
-      const at = Date.now();
-      const { error } = await supabase
-        .from("timers")
-        .update({
-          running: true,
-          started_at: new Date(at).toISOString(),
-          updated_at: new Date(at).toISOString(),
-        })
-        .eq("user_id", userId);
-      if (error) throw error;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Duraklatılamadı.");
       invalidate();
     } finally {
       setIsPending(false);
     }
-  }, [activeTimer, invalidate]);
+  }, [readActive, setActive, invalidate]);
 
-  const stop = useCallback(async () => {
-    if (!activeTimer?.task_id) return;
+  const resume = useCallback(async () => {
+    const current = readActive();
+    if (!current?.task_id || current.running) return;
+    const iso = new Date().toISOString();
+    setActive({ ...current, running: true, started_at: iso, updated_at: iso });
     setIsPending(true);
     try {
       const userId = await requireUserId();
-      const at = Date.now();
-      await commitSession(activeTimer, at, userId);
+      const { error } = await supabase
+        .from("timers")
+        .update({ running: true, started_at: iso, updated_at: iso })
+        .eq("user_id", userId);
+      if (error) throw error;
+      invalidate();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Devam ettirilemedi.");
+      invalidate();
+    } finally {
+      setIsPending(false);
+    }
+  }, [readActive, setActive, invalidate]);
+
+  const stop = useCallback(async () => {
+    const current = readActive();
+    if (!current?.task_id) return;
+    const at = Date.now();
+    // Anlık: sayacı boşalt (widget/sayfa hemen sıfırlansın).
+    setActive({
+      ...current,
+      task_id: null,
+      running: false,
+      started_at: null,
+      accumulated_seconds: 0,
+      updated_at: new Date(at).toISOString(),
+    });
+    setIsPending(true);
+    try {
+      const userId = await requireUserId();
+      await commitSession(current, at, userId);
       const { error } = await supabase
         .from("timers")
         .update({
@@ -212,10 +258,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         .eq("user_id", userId);
       if (error) throw error;
       invalidate(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bitirilemedi.");
+      invalidate();
     } finally {
       setIsPending(false);
     }
-  }, [activeTimer, commitSession, invalidate]);
+  }, [readActive, setActive, commitSession, invalidate]);
 
   const liveElapsed = liveElapsedSeconds(activeTimer, nowMs);
 
