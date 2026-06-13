@@ -21,7 +21,7 @@ import { useCategories } from "@/features/categories/api";
 import { useTasks } from "@/features/tasks/api";
 import { useGoals } from "@/features/goals/api";
 import { usePlans } from "@/features/planning/api";
-import { useDayEntries } from "./api";
+import { useDayEntries, useSignedPhotoUrls } from "./api";
 import { DayDetailDialog } from "./day-detail-dialog";
 import { PlanFormDialog } from "@/features/planning/plan-form-dialog";
 
@@ -68,6 +68,15 @@ export function CalendarPage() {
     () => new Map<string, DayEntry>((dayEntries ?? []).map((e) => [e.day, e])),
     [dayEntries],
   );
+
+  const photoPaths = useMemo(
+    () =>
+      (dayEntries ?? [])
+        .map((e) => e.photo_path)
+        .filter((p): p is string => !!p),
+    [dayEntries],
+  );
+  const { data: photoUrls } = useSignedPhotoUrls(photoPaths);
 
   const plansForDay = (dayStr: string): Plan[] =>
     (plans ?? []).filter((p) => p.start_date <= dayStr && dayStr <= p.end_date);
@@ -144,6 +153,9 @@ export function CalendarPage() {
           const dayTasks = tasksByDay.get(dayStr) ?? [];
           const dayGoals = goalsByDay.get(dayStr) ?? [];
           const entry = entryByDay.get(dayStr);
+          const photoUrl = entry?.photo_path
+            ? photoUrls?.get(entry.photo_path)
+            : undefined;
 
           const dots: string[] = [
             ...dayPlans.map((p) =>
@@ -160,12 +172,19 @@ export function CalendarPage() {
               key={dayStr}
               onClick={() => setSelectedDay(dayStr)}
               className={cn(
-                "relative flex aspect-square flex-col rounded-xl border p-1.5 text-left transition-colors hover:bg-accent md:p-2",
+                "relative flex aspect-square flex-col overflow-hidden rounded-xl border p-1.5 text-left transition-colors hover:bg-accent md:p-2",
                 !inMonth && "opacity-40",
                 today && "border-primary ring-1 ring-primary",
               )}
             >
-              <div className="flex items-center justify-between">
+              {photoUrl && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center opacity-30"
+                  style={{ backgroundImage: `url(${photoUrl})` }}
+                />
+              )}
+              <div className="relative z-10 flex items-center justify-between">
                 <span
                   className={cn(
                     "text-xs font-medium md:text-sm",
@@ -186,10 +205,12 @@ export function CalendarPage() {
               </div>
 
               {entry?.mood && (
-                <span className="mt-0.5 text-sm leading-none">{entry.mood}</span>
+                <span className="relative z-10 mt-0.5 text-sm leading-none">
+                  {entry.mood}
+                </span>
               )}
 
-              <div className="mt-auto flex flex-wrap gap-0.5">
+              <div className="relative z-10 mt-auto flex flex-wrap gap-0.5">
                 {dots.map((color, i) => (
                   <span
                     key={i}

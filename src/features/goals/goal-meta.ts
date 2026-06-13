@@ -1,4 +1,10 @@
-import { addDays, addMonths, addWeeks, addYears } from "date-fns";
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  addYears,
+  differenceInCalendarDays,
+} from "date-fns";
 import { toDayStr } from "@/lib/date";
 import type { GoalTimeframe } from "@/lib/database.types";
 
@@ -43,4 +49,17 @@ export function computeTargetDate(
     case "yearly":
       return toDayStr(addYears(start, 1));
   }
+}
+
+/**
+ * Serbest tarih aralığından en yakın zaman dilimini çıkarır
+ * (şemada 'custom' yok; gruplama için yaklaşık eşleme).
+ */
+export function inferTimeframe(start: Date, end: Date): GoalTimeframe {
+  const days = Math.max(0, differenceInCalendarDays(end, start));
+  if (days <= 7) return "daily";
+  if (days <= 14) return "weekly";
+  if (days <= 45) return "monthly";
+  if (days <= 150) return "quarterly";
+  return "yearly";
 }

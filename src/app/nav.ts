@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   ListTodo,
+  Timer,
   Target,
   Flame,
   CalendarDays,
@@ -20,6 +21,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Panel", icon: LayoutDashboard, primary: true },
   { to: "/tasks", label: "Görevler", icon: ListTodo, primary: true },
+  { to: "/timer", label: "Sayaç", icon: Timer, primary: false },
   { to: "/goals", label: "Hedefler", icon: Target, primary: true },
   { to: "/habits", label: "Alışkanlıklar", icon: Flame, primary: true },
   { to: "/calendar", label: "Takvim", icon: CalendarDays, primary: true },

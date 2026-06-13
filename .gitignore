@@ -23,3 +23,4 @@ pnpm-debug.log*
 # Build / cache
 .vite
 dev-dist
+*.tsbuildinfo

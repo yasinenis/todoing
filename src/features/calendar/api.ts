@@ -78,6 +78,27 @@ export async function removeDayPhoto(path: string): Promise<void> {
   await supabase.storage.from(BUCKET).remove([path]);
 }
 
+/** Birden çok fotoğraf için tek istekte imzalı URL'ler (takvim küçük önizlemeleri). */
+export function useSignedPhotoUrls(paths: string[]) {
+  const sorted = [...new Set(paths)].sort();
+  return useQuery({
+    queryKey: ["photo-urls", sorted.join(",")],
+    enabled: sorted.length > 0,
+    staleTime: 50 * 60 * 1000,
+    queryFn: async (): Promise<Map<string, string>> => {
+      const { data, error } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrls(sorted, 3600);
+      if (error) throw error;
+      const map = new Map<string, string>();
+      for (const item of data ?? []) {
+        if (item.path && item.signedUrl) map.set(item.path, item.signedUrl);
+      }
+      return map;
+    },
+  });
+}
+
 /** Özel bucket için imzalı görüntüleme URL'i (1 saat). */
 export function useSignedPhotoUrl(path: string | null | undefined) {
   return useQuery({

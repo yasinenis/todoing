@@ -1,6 +1,7 @@
-import { useLocation } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Sparkles, Timer } from "lucide-react";
 import { NAV_ITEMS } from "@/app/nav";
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 
@@ -23,6 +24,17 @@ export function Topbar() {
         <h1 className="text-base font-semibold md:text-lg">{title}</h1>
       </div>
       <div className="flex items-center gap-1">
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          aria-label="Tam ekran sayaç"
+        >
+          <Link to="/timer">
+            <Timer className="h-5 w-5" />
+          </Link>
+        </Button>
         <ThemeToggle />
         <UserMenu />
       </div>

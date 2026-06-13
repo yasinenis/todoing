@@ -13,6 +13,9 @@ const DashboardPage = lazy(() =>
 const TasksPage = lazy(() =>
   import("@/features/tasks/tasks-page").then((m) => ({ default: m.TasksPage })),
 );
+const TimerPage = lazy(() =>
+  import("@/features/timer/timer-page").then((m) => ({ default: m.TimerPage })),
+);
 const GoalsPage = lazy(() =>
   import("@/features/goals/goals-page").then((m) => ({ default: m.GoalsPage })),
 );
@@ -47,6 +50,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "/", element: <DashboardPage /> },
           { path: "/tasks", element: <TasksPage /> },
+          { path: "/timer", element: <TimerPage /> },
           { path: "/goals", element: <GoalsPage /> },
           { path: "/habits", element: <HabitsPage /> },
           { path: "/calendar", element: <CalendarPage /> },

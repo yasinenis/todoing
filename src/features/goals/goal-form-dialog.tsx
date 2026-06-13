@@ -19,13 +19,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { fromDayStr, formatLong, today } from "@/lib/date";
 import type { Goal, GoalTimeframe } from "@/lib/database.types";
 import { useCategories } from "@/features/categories/api";
-import { TIMEFRAME_LABELS, TIMEFRAME_ORDER, computeTargetDate } from "./goal-meta";
+import {
+  TIMEFRAME_LABELS,
+  TIMEFRAME_ORDER,
+  computeTargetDate,
+  inferTimeframe,
+} from "./goal-meta";
 import { useCreateGoal, useUpdateGoal } from "./api";
 
 const NO_CATEGORY = "none";
+type Mode = "preset" | "custom";
 
 interface Props {
   open: boolean;
@@ -42,9 +49,11 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState(NO_CATEGORY);
+  const [mode, setMode] = useState<Mode>("preset");
   const [timeframe, setTimeframe] = useState<GoalTimeframe>("monthly");
   const [dailyDays, setDailyDays] = useState(3);
   const [startDate, setStartDate] = useState(today());
+  const [customTarget, setCustomTarget] = useState("");
   const [autoProgress, setAutoProgress] = useState(false);
 
   useEffect(() => {
@@ -52,26 +61,36 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
     setTitle(goal?.title ?? "");
     setDescription(goal?.description ?? "");
     setCategoryId(goal?.category_id ?? NO_CATEGORY);
+    setMode("preset");
     setTimeframe(goal?.timeframe ?? "monthly");
     setStartDate(goal?.start_date ?? today());
+    setCustomTarget(goal?.target_date ?? "");
     setAutoProgress(goal?.auto_progress ?? false);
     setDailyDays(3);
   }, [open, goal]);
 
-  const targetDate = computeTargetDate(
+  // Hesaplanan hedef tarihi + zaman dilimi (moda göre).
+  const presetTarget = computeTargetDate(
     timeframe,
     fromDayStr(startDate),
     dailyDays,
   );
+  const targetDate = mode === "custom" ? customTarget : presetTarget;
+  const effectiveTimeframe =
+    mode === "custom" && customTarget
+      ? inferTimeframe(fromDayStr(startDate), fromDayStr(customTarget))
+      : timeframe;
+  const customInvalid =
+    mode === "custom" && (!customTarget || customTarget < startDate);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || customInvalid) return;
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
       category_id: categoryId === NO_CATEGORY ? null : categoryId,
-      timeframe,
+      timeframe: effectiveTimeframe,
       start_date: startDate,
       target_date: targetDate,
       auto_progress: autoProgress,
@@ -91,6 +110,21 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
   };
 
   const pending = create.isPending || update.isPending;
+
+  const modeBtn = (m: Mode, label: string) => (
+    <button
+      type="button"
+      onClick={() => setMode(m)}
+      className={cn(
+        "flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+        mode === m
+          ? "bg-background text-foreground shadow-sm"
+          : "text-muted-foreground",
+      )}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -119,53 +153,91 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Zaman dilimi</Label>
-              <Select
-                value={timeframe}
-                onValueChange={(v) => setTimeframe(v as GoalTimeframe)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMEFRAME_ORDER.map((tf) => (
-                    <SelectItem key={tf} value={tf}>
-                      {TIMEFRAME_LABELS[tf]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="goal-start">Başlangıç</Label>
-              <Input
-                id="goal-start"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
+          {/* Mod seçimi: hazır süre mi, serbest tarih aralığı mı */}
+          <div className="flex gap-1 rounded-xl bg-muted p-1">
+            {modeBtn("preset", "Hazır süre")}
+            {modeBtn("custom", "Tarih aralığı")}
           </div>
 
-          {timeframe === "daily" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="goal-days">Kaç gün? (1-7)</Label>
-              <Input
-                id="goal-days"
-                type="number"
-                min={1}
-                max={7}
-                value={dailyDays}
-                onChange={(e) => setDailyDays(Number(e.target.value))}
-              />
+          {mode === "preset" ? (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Zaman dilimi</Label>
+                  <Select
+                    value={timeframe}
+                    onValueChange={(v) => setTimeframe(v as GoalTimeframe)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIMEFRAME_ORDER.map((tf) => (
+                        <SelectItem key={tf} value={tf}>
+                          {TIMEFRAME_LABELS[tf]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="goal-start">Başlangıç</Label>
+                  <Input
+                    id="goal-start"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {timeframe === "daily" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="goal-days">Kaç gün? (1-7)</Label>
+                  <Input
+                    id="goal-days"
+                    type="number"
+                    min={1}
+                    max={7}
+                    value={dailyDays}
+                    onChange={(e) => setDailyDays(Number(e.target.value))}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="goal-start-c">Başlangıç</Label>
+                <Input
+                  id="goal-start-c"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="goal-target-c">Bitiş (hedef)</Label>
+                <Input
+                  id="goal-target-c"
+                  type="date"
+                  min={startDate}
+                  value={customTarget}
+                  onChange={(e) => setCustomTarget(e.target.value)}
+                />
+              </div>
             </div>
           )}
 
-          <div className="rounded-xl bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
-            Hedef tarihi: <strong>{formatLong(targetDate)}</strong>
-          </div>
+          {customInvalid ? (
+            <div className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              Bitiş tarihini seç (başlangıçtan sonra olmalı).
+            </div>
+          ) : (
+            <div className="rounded-xl bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
+              Hedef tarihi: <strong>{formatLong(targetDate)}</strong>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label>Kategori</Label>
@@ -202,7 +274,10 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
             >
               Vazgeç
             </Button>
-            <Button type="submit" disabled={pending || !title.trim()}>
+            <Button
+              type="submit"
+              disabled={pending || !title.trim() || customInvalid}
+            >
               {isEdit ? "Kaydet" : "Oluştur"}
             </Button>
           </DialogFooter>

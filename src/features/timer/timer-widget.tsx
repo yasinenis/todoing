@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Pause, Play, Square, Timer as TimerIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDuration } from "@/lib/utils";
@@ -31,14 +32,14 @@ export function TimerWidget() {
         >
           <TimerIcon className={isRunning ? "h-5 w-5 animate-pulse" : "h-5 w-5"} />
         </div>
-        <div className="min-w-0">
+        <Link to="/timer" className="min-w-0 transition-opacity hover:opacity-80">
           <p className="max-w-[10rem] truncate text-sm font-medium">
             {task?.title ?? "Görev"}
           </p>
           <p className="font-mono text-sm tabular-nums text-muted-foreground">
             {formatDuration(totalSeconds, true)}
           </p>
-        </div>
+        </Link>
         <div className="flex items-center gap-1">
           {isRunning ? (
             <Button
