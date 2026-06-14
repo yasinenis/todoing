@@ -51,13 +51,10 @@ export function TimerPage() {
             className={cn(
               "relative flex aspect-square w-72 max-w-[80vw] items-center justify-center rounded-full border-4 transition-colors md:w-96",
               isRunning
-                ? "border-primary bg-primary/5"
+                ? "animate-pulse-ring border-primary bg-primary/5"
                 : "border-muted bg-muted/30",
             )}
           >
-            {isRunning && (
-              <span className="pointer-events-none absolute inset-0 animate-ping rounded-full border-2 border-primary/30" />
-            )}
             <div className="text-center">
               <p className="font-mono text-5xl font-bold tabular-nums md:text-7xl">
                 {formatDuration(totalSeconds, true)}

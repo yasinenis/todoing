@@ -104,7 +104,7 @@ export function TimerFocus() {
               : cn(
                   "border-4",
                   isRunning
-                    ? "border-primary bg-primary/5"
+                    ? "animate-pulse-ring border-primary bg-primary/5"
                     : "border-muted bg-muted/30",
                 ),
           )}
@@ -138,10 +138,6 @@ export function TimerFocus() {
               />
             </svg>
           )}
-          {!hasBlock && isRunning && (
-            <span className="pointer-events-none absolute inset-0 animate-ping rounded-full border-2 border-primary/30" />
-          )}
-
           <div className="relative z-10 px-6 text-center">
             {hasBlock ? (
               completed ? (
