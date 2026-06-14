@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/providers/auth-provider";
@@ -14,6 +13,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -21,8 +21,27 @@ export function LoginPage() {
   // Zaten girişliyse panele yönlendir.
   if (session) return <Navigate to="/" replace />;
 
+  const mismatch =
+    mode === "signup" &&
+    confirmPassword.length > 0 &&
+    password !== confirmPassword;
+
+  const canSubmit =
+    !loading &&
+    (mode === "signin" ||
+      (confirmPassword.length > 0 && password === confirmPassword));
+
+  const switchMode = () => {
+    setMode(mode === "signin" ? "signup" : "signin");
+    setConfirmPassword("");
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (mode === "signup" && password !== confirmPassword) {
+      toast.error("Parolalar eşleşmiyor.");
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "signin") {
@@ -43,6 +62,7 @@ export function LoginPage() {
             "Kayıt oluşturuldu! E-postanı doğrulaman gerekebilir, sonra giriş yap.",
           );
           setMode("signin");
+          setConfirmPassword("");
         }
       }
     } catch (err) {
@@ -57,10 +77,12 @@ export function LoginPage() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/20 p-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-            <Sparkles className="h-7 w-7" />
-          </div>
+        <div className="mb-8 flex flex-col items-center gap-4 text-center">
+          <img
+            src="/icon-512.png"
+            alt="TodoIng"
+            className="h-32 w-32 object-contain drop-shadow-md"
+          />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">TodoIng</h1>
             <p className="text-sm text-muted-foreground">
@@ -99,7 +121,31 @@ export function LoginPage() {
                   placeholder="••••••••"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+
+              {mode === "signup" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirm">Parola (tekrar)</Label>
+                  <Input
+                    id="confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    minLength={6}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    aria-invalid={mismatch}
+                    className={mismatch ? "border-destructive" : undefined}
+                  />
+                  {mismatch && (
+                    <p className="text-xs font-medium text-destructive">
+                      Parolalar eşleşmiyor.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <Button type="submit" className="w-full" disabled={!canSubmit}>
                 {loading
                   ? "Lütfen bekle…"
                   : mode === "signin"
@@ -113,9 +159,7 @@ export function LoginPage() {
               <button
                 type="button"
                 className="font-medium text-primary hover:underline"
-                onClick={() =>
-                  setMode(mode === "signin" ? "signup" : "signin")
-                }
+                onClick={switchMode}
               >
                 {mode === "signin" ? "Kayıt ol" : "Giriş yap"}
               </button>
