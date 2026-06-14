@@ -139,7 +139,11 @@ export function DashboardPage() {
       {isLoading ? (
         <Skeleton className="h-72" />
       ) : (
-        <WorkHoursChart entries={workEntries} />
+        <WorkHoursChart
+          entries={workEntries}
+          tasks={tasks ?? []}
+          categories={categories ?? []}
+        />
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">

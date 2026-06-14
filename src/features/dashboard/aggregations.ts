@@ -10,88 +10,137 @@ import { tr } from "date-fns/locale";
 import { toDayStr } from "@/lib/date";
 import type { TimeEntry } from "@/lib/database.types";
 
-export interface Bucket {
-  label: string;
-  hours: number;
-  seconds: number;
+export type WorkRange = "daily" | "weekly" | "yearly" | "all";
+
+/** Bir zaman kaydının ait olduğu kategori (renk + ad + anahtar). */
+export interface CatResolved {
+  key: string;
+  name: string;
+  color: string;
+}
+export type CatResolver = (taskId: string | null) => CatResolved;
+
+export interface WorkSeries {
+  key: string;
+  name: string;
+  color: string;
+}
+export interface WorkChart {
+  /** Recharts satırları: { label, [catKey]: saat } */
+  rows: Array<Record<string, string | number>>;
+  /** Grafikte görünen kategoriler (yığın sırası). */
+  series: WorkSeries[];
 }
 
 const toHours = (seconds: number) => Math.round((seconds / 3600) * 100) / 100;
 
-/** gün ("yyyy-MM-dd") → toplam saniye */
-function secondsByDay(entries: TimeEntry[]): Map<string, number> {
-  const map = new Map<string, number>();
-  for (const e of entries) {
-    map.set(e.day, (map.get(e.day) ?? 0) + e.duration_seconds);
-  }
-  return map;
+interface BucketDef {
+  key: string;
+  label: string;
 }
 
-/** Son `days` gün — günlük toplam. */
-export function dailyBuckets(entries: TimeEntry[], days = 14): Bucket[] {
-  const byDay = secondsByDay(entries);
-  const out: Bucket[] = [];
+/** Seçilen aralık için kova tanımları + bir kaydı kovaya eşleyen fonksiyon. */
+function bucketsFor(
+  range: WorkRange,
+  entries: TimeEntry[],
+): { defs: BucketDef[]; keyOf: (e: TimeEntry) => string | null } {
   const today = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = subDays(today, i);
-    const key = toDayStr(d);
-    const seconds = byDay.get(key) ?? 0;
-    out.push({ label: format(d, "d MMM", { locale: tr }), hours: toHours(seconds), seconds });
+
+  if (range === "daily") {
+    const defs: BucketDef[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = subDays(today, i);
+      defs.push({ key: toDayStr(d), label: format(d, "d MMM", { locale: tr }) });
+    }
+    return { defs, keyOf: (e) => e.day };
   }
-  return out;
+
+  if (range === "weekly") {
+    const defs: BucketDef[] = [];
+    const thisWeek = startOfWeek(today, { weekStartsOn: 1 });
+    for (let i = 11; i >= 0; i--) {
+      const w = subWeeks(thisWeek, i);
+      defs.push({ key: toDayStr(w), label: format(w, "d MMM", { locale: tr }) });
+    }
+    return {
+      defs,
+      keyOf: (e) =>
+        toDayStr(startOfWeek(parseISO(e.day), { weekStartsOn: 1 })),
+    };
+  }
+
+  if (range === "yearly") {
+    const year = getYear(today);
+    const defs: BucketDef[] = [];
+    for (let m = 0; m < 12; m++) {
+      defs.push({
+        key: `${m}`,
+        label: format(new Date(year, m, 1), "LLL", { locale: tr }),
+      });
+    }
+    return {
+      defs,
+      keyOf: (e) => {
+        const d = parseISO(e.day);
+        return getYear(d) === year ? `${d.getMonth()}` : null;
+      },
+    };
+  }
+
+  // all — tüm yıllar
+  const years = new Set<number>();
+  for (const e of entries) years.add(getYear(parseISO(e.day)));
+  if (years.size === 0) years.add(getYear(today));
+  const sorted = [...years].sort((a, b) => a - b);
+  return {
+    defs: sorted.map((y) => ({ key: `${y}`, label: `${y}` })),
+    keyOf: (e) => `${getYear(parseISO(e.day))}`,
+  };
 }
 
-/** Son `weeks` hafta — haftalık toplam (Pazartesi başlangıçlı). */
-export function weeklyBuckets(entries: TimeEntry[], weeks = 12): Bucket[] {
-  const byWeek = new Map<string, number>();
-  for (const e of entries) {
-    const wk = toDayStr(startOfWeek(parseISO(e.day), { weekStartsOn: 1 }));
-    byWeek.set(wk, (byWeek.get(wk) ?? 0) + e.duration_seconds);
-  }
-  const out: Bucket[] = [];
-  const thisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
-  for (let i = weeks - 1; i >= 0; i--) {
-    const wkStart = subWeeks(thisWeek, i);
-    const key = toDayStr(wkStart);
-    const seconds = byWeek.get(key) ?? 0;
-    out.push({
-      label: format(wkStart, "d MMM", { locale: tr }),
-      hours: toHours(seconds),
-      seconds,
-    });
-  }
-  return out;
-}
+/**
+ * Çalışma saatlerini seçilen aralıkta KATEGORİ kırılımıyla toplar.
+ * Her satır kategori başına saat içerir → yığılmış (stacked) bar için.
+ */
+export function buildWorkHours(
+  entries: TimeEntry[],
+  range: WorkRange,
+  resolve: CatResolver,
+): WorkChart {
+  const { defs, keyOf } = bucketsFor(range, entries);
+  const bucketKeys = new Set(defs.map((d) => d.key));
 
-/** İçinde bulunulan yılın ayları — aylık toplam. */
-export function monthlyThisYear(entries: TimeEntry[]): Bucket[] {
-  const year = getYear(new Date());
-  const months = new Array(12).fill(0);
-  for (const e of entries) {
-    const d = parseISO(e.day);
-    if (getYear(d) === year) months[d.getMonth()] += e.duration_seconds;
-  }
-  return months.map((seconds, m) => ({
-    label: format(new Date(year, m, 1), "LLL", { locale: tr }),
-    hours: toHours(seconds),
-    seconds,
-  }));
-}
+  const acc = new Map<string, Map<string, number>>(); // bucket → cat → sn
+  const catTotals = new Map<string, number>();
+  const catInfo = new Map<string, CatResolved>();
 
-/** Tüm yıllar — yıllık toplam. */
-export function yearlyBuckets(entries: TimeEntry[]): Bucket[] {
-  const byYear = new Map<number, number>();
   for (const e of entries) {
-    const y = getYear(parseISO(e.day));
-    byYear.set(y, (byYear.get(y) ?? 0) + e.duration_seconds);
+    const bk = keyOf(e);
+    if (bk == null || !bucketKeys.has(bk)) continue;
+    const cat = resolve(e.task_id);
+    catInfo.set(cat.key, cat);
+    catTotals.set(cat.key, (catTotals.get(cat.key) ?? 0) + e.duration_seconds);
+    let inner = acc.get(bk);
+    if (!inner) {
+      inner = new Map();
+      acc.set(bk, inner);
+    }
+    inner.set(cat.key, (inner.get(cat.key) ?? 0) + e.duration_seconds);
   }
-  if (byYear.size === 0) {
-    const y = getYear(new Date());
-    return [{ label: String(y), hours: 0, seconds: 0 }];
-  }
-  return [...byYear.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([y, seconds]) => ({ label: String(y), hours: toHours(seconds), seconds }));
+
+  // Kategoriler toplam süreye göre sıralı (en çok çalışılan altta).
+  const series: WorkSeries[] = [...catTotals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([key]) => catInfo.get(key)!);
+
+  const rows = defs.map(({ key, label }) => {
+    const row: Record<string, string | number> = { label };
+    const inner = acc.get(key);
+    for (const s of series) row[s.key] = toHours(inner?.get(s.key) ?? 0);
+    return row;
+  });
+
+  return { rows, series };
 }
 
 /** Bugünün toplam çalışma saniyesi. */
