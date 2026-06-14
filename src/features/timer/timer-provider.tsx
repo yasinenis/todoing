@@ -62,6 +62,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   const { data: activeTimer = null } = useQuery({
     queryKey: qk.activeTimer,
+    // Zaman-hassas: odaklanınca her zaman tazelensin (diğer cihaz senkronu).
+    staleTime: 0,
     queryFn: async (): Promise<Timer | null> => {
       const { data, error } = await supabase
         .from("timers")

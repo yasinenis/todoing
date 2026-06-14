@@ -5,7 +5,9 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 30_000,
       retry: 1,
-      refetchOnWindowFocus: false,
+      // Başka cihazda yapılan değişiklikler, sekmeye/uygulamaya dönünce
+      // (odaklanınca) otomatik tazelensin — manuel yenileme gerekmesin.
+      refetchOnWindowFocus: true,
     },
   },
 });
