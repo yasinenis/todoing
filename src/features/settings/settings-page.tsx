@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme, PALETTES } from "@/app/providers/theme-provider";
 import { useAuth } from "@/app/providers/auth-provider";
+import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
+import { isElectron } from "@/features/desktop/downloads";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
@@ -85,6 +87,21 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {!isElectron() && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Masaüstü uygulaması</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <p className="max-w-sm text-sm text-muted-foreground">
+              Windows, Linux veya macOS için masaüstü sürümünü indir. Web ve
+              telefonla aynı veriyi kullanır, senkron çalışır.
+            </p>
+            <DownloadDesktopButton />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

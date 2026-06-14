@@ -7,10 +7,17 @@
   "linux": {
     "target": ["AppImage", "deb"],
     "category": "Utility",
-    "maintainer": "TodoIng"
+    "maintainer": "TodoIng",
+    "artifactName": "${productName}-linux.${ext}"
   },
   "win": {
-    "target": ["nsis"]
+    "target": ["nsis"],
+    "artifactName": "${productName}-windows.${ext}"
+  },
+  "mac": {
+    "target": ["dmg"],
+    "identity": null,
+    "artifactName": "${productName}-mac.${ext}"
   },
   "nsis": {
     "oneClick": false,

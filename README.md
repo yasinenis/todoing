@@ -86,11 +86,25 @@ npm run electron:build:linux  # Linux installer (.AppImage, .deb) → release/
 npm run electron:build:win    # Windows installer (.exe)  → release/
 ```
 
-> Not: Windows installer'ı en sağlıklı şekilde Windows'ta veya CI'da üretilir.
-> `.github/workflows/desktop.yml` ile **GitHub Actions** hem Linux hem Windows
-> kurulumlarını otomatik üretir: Actions sekmesi → "Masaüstü (Electron) build" →
-> Run workflow (ya da `vX.Y.Z` etiketi push'la). Çıktılar iş artifaktları olarak iner.
-> İmzasız kurulumlarda işletim sistemi "bilinmeyen yayıncı" uyarısı gösterebilir.
+### Sürüm yayınlama (otomatik installer + indirme butonu)
+
+`.github/workflows/desktop.yml`, bir `v*` etiketi push'lanınca **Windows + Linux +
+macOS** için installer üretir ve bunları **GitHub Release**'e yükler. Web uygulamasındaki
+"Masaüstü uygulamasını indir" butonu bu release'in sabit adlı dosyalarına bağlanır
+(`releases/latest/download/TodoIng-windows.exe` vb.) → tek tıkla indirir.
+
+Yeni sürüm çıkarmak:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0      # Actions tetiklenir → 3 OS derlenir → Release yayınlanır
+```
+
+Gereksinimler:
+- Repo **Public** olmalı (release dosyaları girişsiz indirilebilsin; Actions ücretsiz).
+- Settings → Actions → General → Workflow permissions = **Read and write**.
+- İmzasız kurulumda sistem "bilinmeyen yayıncı" uyarısı gösterebilir (kişisel kullanımda
+  geçilebilir). macOS dmg imzasız ve Apple Silicon (arm64) içindir.
 
 ## Proje yapısı
 

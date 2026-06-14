@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
 
 export function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -121,6 +122,10 @@ export function LoginPage() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="mt-4 flex justify-center">
+          <DownloadDesktopButton variant="ghost" size="sm" />
+        </div>
       </div>
     </div>
   );
