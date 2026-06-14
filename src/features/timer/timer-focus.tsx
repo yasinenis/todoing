@@ -62,7 +62,7 @@ export function TimerFocus() {
           )}
         >
           {isRunning && (
-            <span className="absolute inset-0 animate-ping rounded-full border-2 border-primary/30" />
+            <span className="pointer-events-none absolute inset-0 animate-ping rounded-full border-2 border-primary/30" />
           )}
           <div className="text-center">
             <p className="font-mono text-6xl font-bold tabular-nums md:text-8xl">
