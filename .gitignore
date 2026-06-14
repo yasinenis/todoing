@@ -24,3 +24,6 @@ pnpm-debug.log*
 .vite
 dev-dist
 *.tsbuildinfo
+
+# Electron build çıktıları
+release

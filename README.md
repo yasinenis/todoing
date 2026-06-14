@@ -74,6 +74,24 @@ SPA olduğu için tüm yollar `index.html`'e yönlendirilmeli. Yapılandırmalar
 Üretim derlemesini bir HTTPS adresine deploy et; tarayıcıdan aç ve "Ana ekrana ekle"
 de. Uygulama tam ekran açılır ve offline kabuk desteğiyle çalışır.
 
+## Masaüstü uygulaması (Electron)
+
+Masaüstü sürümü, dağıtılan web adresini bir pencere içinde yükler → web/PWA ile **aynı
+Supabase'i** kullanır, otomatik senkron kalır. Adres `electron/main.cjs` içinde
+(`TODOING_URL`) ayarlıdır.
+
+```bash
+npm run electron:dev          # geliştirme (yerel Vite + Electron penceresi)
+npm run electron:build:linux  # Linux installer (.AppImage, .deb) → release/
+npm run electron:build:win    # Windows installer (.exe)  → release/
+```
+
+> Not: Windows installer'ı en sağlıklı şekilde Windows'ta veya CI'da üretilir.
+> `.github/workflows/desktop.yml` ile **GitHub Actions** hem Linux hem Windows
+> kurulumlarını otomatik üretir: Actions sekmesi → "Masaüstü (Electron) build" →
+> Run workflow (ya da `vX.Y.Z` etiketi push'la). Çıktılar iş artifaktları olarak iner.
+> İmzasız kurulumlarda işletim sistemi "bilinmeyen yayıncı" uyarısı gösterebilir.
+
 ## Proje yapısı
 
 ```
