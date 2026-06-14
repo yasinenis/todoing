@@ -9,7 +9,7 @@
     "target": ["AppImage", "deb"],
     "category": "Utility",
     "maintainer": "TodoIng",
-    "icon": "build/icon.png",
+    "icon": "build/icons",
     "artifactName": "${productName}-linux.${ext}"
   },
   "win": {
