@@ -5,6 +5,7 @@ import {
   Target,
   Flame,
   CalendarDays,
+  Trophy,
   Tags,
   Settings,
   type LucideIcon,
@@ -25,6 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/goals", label: "Hedefler", icon: Target, primary: true },
   { to: "/habits", label: "Alışkanlıklar", icon: Flame, primary: true },
   { to: "/calendar", label: "Takvim", icon: CalendarDays, primary: true },
+  { to: "/leaderboard", label: "Liderlik", icon: Trophy, primary: false },
   { to: "/categories", label: "Kategoriler", icon: Tags, primary: false },
   { to: "/settings", label: "Ayarlar", icon: Settings, primary: false },
 ];

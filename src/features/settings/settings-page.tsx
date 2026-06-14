@@ -7,6 +7,7 @@ import { useAuth } from "@/app/providers/auth-provider";
 import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
 import { isElectron } from "@/features/desktop/downloads";
 import { useElectronUpdate } from "@/features/desktop/electron-update";
+import { ProfileCard } from "@/features/profile/profile-card";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
@@ -23,6 +24,8 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Ayarlar" description="Görünüm ve hesap tercihlerin." />
+
+      <ProfileCard />
 
       <Card>
         <CardHeader>

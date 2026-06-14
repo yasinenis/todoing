@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/providers/auth-provider";
@@ -8,17 +9,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
+import { USERNAME_RE, checkUsernameAvailable } from "@/features/profile/api";
+
+type UsernameStatus =
+  | "idle"
+  | "invalid"
+  | "checking"
+  | "available"
+  | "taken";
 
 export function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>("idle");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { session } = useAuth();
   const navigate = useNavigate();
 
-  // Zaten girişliyse panele yönlendir.
+  // Kullanıcı adı uygunluğunu (debounce ile) denetle.
+  useEffect(() => {
+    if (mode !== "signup") return;
+    if (!username) {
+      setUsernameStatus("idle");
+      return;
+    }
+    if (!USERNAME_RE.test(username)) {
+      setUsernameStatus("invalid");
+      return;
+    }
+    setUsernameStatus("checking");
+    const t = setTimeout(async () => {
+      try {
+        const ok = await checkUsernameAvailable(username);
+        setUsernameStatus(ok ? "available" : "taken");
+      } catch {
+        setUsernameStatus("idle");
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [username, mode]);
+
   if (session) return <Navigate to="/" replace />;
 
   const mismatch =
@@ -29,18 +62,28 @@ export function LoginPage() {
   const canSubmit =
     !loading &&
     (mode === "signin" ||
-      (confirmPassword.length > 0 && password === confirmPassword));
+      (usernameStatus === "available" &&
+        confirmPassword.length > 0 &&
+        password === confirmPassword));
 
   const switchMode = () => {
     setMode(mode === "signin" ? "signup" : "signin");
     setConfirmPassword("");
+    setUsername("");
+    setUsernameStatus("idle");
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === "signup" && password !== confirmPassword) {
-      toast.error("Parolalar eşleşmiyor.");
-      return;
+    if (mode === "signup") {
+      if (usernameStatus !== "available") {
+        toast.error("Lütfen uygun bir kullanıcı adı seç.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error("Parolalar eşleşmiyor.");
+        return;
+      }
     }
     setLoading(true);
     try {
@@ -52,10 +95,13 @@ export function LoginPage() {
         if (error) throw error;
         navigate("/", { replace: true });
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
+        });
         if (error) throw error;
         if (data.session) {
-          // E-posta onayı kapalıysa kayıt sonrası direkt oturum açılır.
           navigate("/", { replace: true });
         } else {
           toast.success(
@@ -94,6 +140,56 @@ export function LoginPage() {
         <Card>
           <CardContent className="pt-6">
             <form onSubmit={submit} className="space-y-4">
+              {mode === "signup" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="username">Kullanıcı adı</Label>
+                  <div className="relative">
+                    <Input
+                      id="username"
+                      autoComplete="username"
+                      required
+                      value={username}
+                      onChange={(e) =>
+                        setUsername(e.target.value.replace(/\s/g, ""))
+                      }
+                      placeholder="ornek_kullanici"
+                      className="pr-9"
+                      aria-invalid={
+                        usernameStatus === "taken" ||
+                        usernameStatus === "invalid"
+                      }
+                    />
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                      {usernameStatus === "checking" && (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      )}
+                      {usernameStatus === "available" && (
+                        <Check className="h-4 w-4 text-success" />
+                      )}
+                      {(usernameStatus === "taken" ||
+                        usernameStatus === "invalid") && (
+                        <X className="h-4 w-4 text-destructive" />
+                      )}
+                    </span>
+                  </div>
+                  <p
+                    className={
+                      usernameStatus === "taken" || usernameStatus === "invalid"
+                        ? "text-xs font-medium text-destructive"
+                        : "text-xs text-muted-foreground"
+                    }
+                  >
+                    {usernameStatus === "taken"
+                      ? "Bu kullanıcı adı alınmış."
+                      : usernameStatus === "invalid"
+                        ? "3-20 karakter; harf, rakam ve alt çizgi."
+                        : usernameStatus === "available"
+                          ? "Uygun ✓"
+                          : "3-20 karakter; harf, rakam ve alt çizgi."}
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <Label htmlFor="email">E-posta</Label>
                 <Input
@@ -106,6 +202,7 @@ export function LoginPage() {
                   placeholder="ornek@eposta.com"
                 />
               </div>
+
               <div className="space-y-1.5">
                 <Label htmlFor="password">Parola</Label>
                 <Input

@@ -29,6 +29,11 @@ const CalendarPage = lazy(() =>
     default: m.CalendarPage,
   })),
 );
+const LeaderboardPage = lazy(() =>
+  import("@/features/leaderboard/leaderboard-page").then((m) => ({
+    default: m.LeaderboardPage,
+  })),
+);
 const CategoriesPage = lazy(() =>
   import("@/features/categories/categories-page").then((m) => ({
     default: m.CategoriesPage,
@@ -54,6 +59,7 @@ export const router = createBrowserRouter([
           { path: "/goals", element: <GoalsPage /> },
           { path: "/habits", element: <HabitsPage /> },
           { path: "/calendar", element: <CalendarPage /> },
+          { path: "/leaderboard", element: <LeaderboardPage /> },
           { path: "/categories", element: <CategoriesPage /> },
           { path: "/settings", element: <SettingsPage /> },
         ],

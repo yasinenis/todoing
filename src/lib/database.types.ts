@@ -21,6 +21,8 @@ export interface Database {
         Row: {
           id: string;
           display_name: string | null;
+          username: string | null;
+          avatar_path: string | null;
           theme: string;
           week_starts_on: number;
           created_at: string;
@@ -28,6 +30,8 @@ export interface Database {
         Insert: {
           id: string;
           display_name?: string | null;
+          username?: string | null;
+          avatar_path?: string | null;
           theme?: string;
           week_starts_on?: number;
           created_at?: string;
@@ -257,7 +261,21 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      username_available: {
+        Args: { name: string };
+        Returns: boolean;
+      };
+      leaderboard: {
+        Args: { period: string };
+        Returns: {
+          user_id: string;
+          username: string | null;
+          avatar_path: string | null;
+          seconds: number;
+        }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
