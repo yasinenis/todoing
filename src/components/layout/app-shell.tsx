@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { BottomNav } from "./bottom-nav";
 import { Topbar } from "./topbar";
-import { TimerWidget } from "@/features/timer/timer-widget";
+import { TimerFocus } from "@/features/timer/timer-focus";
 
 export function AppShell() {
   return (
@@ -26,8 +26,8 @@ export function AppShell() {
           </div>
         </main>
       </div>
-      <TimerWidget />
       <BottomNav />
+      <TimerFocus />
     </div>
   );
 }
