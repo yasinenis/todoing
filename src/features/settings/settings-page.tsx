@@ -1,4 +1,4 @@
-import { Check, Monitor, Moon, Sun } from "lucide-react";
+import { Check, Monitor, Moon, RefreshCw, Sun } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { useTheme, PALETTES } from "@/app/providers/theme-provider";
 import { useAuth } from "@/app/providers/auth-provider";
 import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
 import { isElectron } from "@/features/desktop/downloads";
+import { useElectronUpdate } from "@/features/desktop/electron-update";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
@@ -17,6 +18,7 @@ const THEMES = [
 export function SettingsPage() {
   const { theme, setTheme, palette, setPalette } = useTheme();
   const { user, signOut } = useAuth();
+  const update = useElectronUpdate();
 
   return (
     <div className="space-y-6">
@@ -99,6 +101,40 @@ export function SettingsPage() {
               telefonla aynı veriyi kullanır, senkron çalışır.
             </p>
             <DownloadDesktopButton />
+          </CardContent>
+        </Card>
+      )}
+
+      {update.supported && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Uygulama güncellemeleri</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">
+                {update.downloaded
+                  ? `Yeni sürüm hazır${update.version ? ` (${update.version})` : ""}`
+                  : "Otomatik güncelleme açık"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Yeni sürüm yayınlanınca otomatik indirilir; kapatınca kurulur.
+              </p>
+            </div>
+            {update.downloaded ? (
+              <Button onClick={update.install}>Şimdi güncelle</Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => update.check()}
+                disabled={update.checking}
+              >
+                <RefreshCw
+                  className={cn("h-4 w-4", update.checking && "animate-spin")}
+                />
+                {update.checking ? "Denetleniyor…" : "Güncellemeleri denetle"}
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}

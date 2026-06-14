@@ -8,6 +8,7 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { ThemeProvider } from "@/app/providers/theme-provider";
 import { AuthProvider } from "@/app/providers/auth-provider";
 import { TimerProvider } from "@/features/timer/timer-provider";
+import { ElectronUpdateProvider } from "@/features/desktop/electron-update";
 import { router } from "@/app/router";
 import { SetupRequired } from "@/features/auth/setup-required";
 import "./index.css";
@@ -25,11 +26,13 @@ function Root() {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TimerProvider>
-            <RouterProvider router={router} />
-          </TimerProvider>
-        </AuthProvider>
+        <ElectronUpdateProvider>
+          <AuthProvider>
+            <TimerProvider>
+              <RouterProvider router={router} />
+            </TimerProvider>
+          </AuthProvider>
+        </ElectronUpdateProvider>
         <Toaster position="top-center" richColors />
       </QueryClientProvider>
     </ThemeProvider>

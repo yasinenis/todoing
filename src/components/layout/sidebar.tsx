@@ -1,5 +1,4 @@
 import { NavLink } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 import { NAV_ITEMS } from "@/app/nav";
 import { cn } from "@/lib/utils";
 
@@ -7,9 +6,11 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col border-r bg-card/50 px-3 py-4">
       <div className="flex items-center gap-2 px-3 pb-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <Sparkles className="h-5 w-5" />
-        </div>
+        <img
+          src="/icon-512.png"
+          alt="TodoIng"
+          className="h-9 w-9 rounded-xl object-contain"
+        />
         <span className="text-lg font-bold tracking-tight">TodoIng</span>
       </div>
 

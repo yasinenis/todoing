@@ -4,6 +4,7 @@
   "productName": "TodoIng",
   "directories": { "output": "release", "buildResources": "build" },
   "files": ["electron/**/*"],
+  "publish": [{ "provider": "github", "owner": "yasinenis", "repo": "todoing" }],
   "linux": {
     "target": ["AppImage", "deb"],
     "category": "Utility",
