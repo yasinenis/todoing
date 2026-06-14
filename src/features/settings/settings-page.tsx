@@ -1,8 +1,8 @@
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/app/providers/theme-provider";
+import { useTheme, PALETTES } from "@/app/providers/theme-provider";
 import { useAuth } from "@/app/providers/auth-provider";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ const THEMES = [
 ] as const;
 
 export function SettingsPage() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, palette, setPalette } = useTheme();
   const { user, signOut } = useAuth();
 
   return (
@@ -39,6 +39,47 @@ export function SettingsPage() {
               >
                 <Icon className="h-5 w-5" />
                 {label}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Renk teması</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {PALETTES.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPalette(p.id)}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border p-3 text-left transition-colors",
+                  palette === p.id
+                    ? "border-primary bg-primary/10"
+                    : "hover:bg-accent",
+                )}
+              >
+                <span className="flex -space-x-1.5">
+                  {p.swatch.map((c) => (
+                    <span
+                      key={c}
+                      className="h-7 w-7 rounded-full border-2 border-card"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{p.name}</span>
+                  <span className="block text-xs text-muted-foreground">
+                    {p.desc}
+                  </span>
+                </span>
+                {palette === p.id && (
+                  <Check className="h-4 w-4 shrink-0 text-primary" />
+                )}
               </button>
             ))}
           </div>

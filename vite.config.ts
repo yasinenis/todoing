@@ -14,8 +14,8 @@ export default defineConfig({
         short_name: "TodoIng",
         description:
           "Görevlerini, hedeflerini ve alışkanlıklarını tek yerde topla; her gün motive ol.",
-        theme_color: "#a78bfa",
-        background_color: "#faf8ff",
+        theme_color: "#3a5bc7",
+        background_color: "#f8fafc",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",

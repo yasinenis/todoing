@@ -3,87 +3,211 @@
 @tailwind utilities;
 
 @layer base {
+  /* ============ Varsayılan: PROFESYONEL (nötr indigo/arduvaz) ============ */
   :root {
-    /* Pastel & yumuşak — Açık tema */
-    --background: 280 40% 99%;
-    --foreground: 260 25% 22%;
+    --background: 220 33% 99%;
+    --foreground: 222 25% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 260 25% 22%;
+    --card-foreground: 222 25% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 260 25% 22%;
+    --popover-foreground: 222 25% 18%;
 
-    --primary: 255 70% 72%;
-    --primary-foreground: 255 60% 99%;
+    --primary: 222 52% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 280 45% 95%;
-    --secondary-foreground: 260 30% 30%;
+    --secondary: 220 25% 94%;
+    --secondary-foreground: 222 28% 30%;
 
-    --muted: 280 30% 95%;
-    --muted-foreground: 260 12% 50%;
+    --muted: 220 22% 95%;
+    --muted-foreground: 220 12% 46%;
 
-    --accent: 330 70% 92%;
-    --accent-foreground: 330 40% 35%;
+    --accent: 222 45% 92%;
+    --accent-foreground: 222 40% 30%;
 
-    --destructive: 0 72% 68%;
+    --destructive: 0 72% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 150 50% 60%;
+    --success: 150 55% 42%;
     --success-foreground: 150 40% 98%;
 
-    --border: 280 25% 90%;
-    --input: 280 25% 90%;
-    --ring: 255 70% 72%;
+    --border: 220 20% 89%;
+    --input: 220 20% 89%;
+    --ring: 222 52% 48%;
 
     --radius: 1rem;
 
-    /* Grafik renkleri (pastel) */
-    --chart-1: 255 70% 72%;
-    --chart-2: 330 70% 78%;
-    --chart-3: 190 65% 65%;
-    --chart-4: 40 85% 70%;
-    --chart-5: 150 50% 65%;
+    --chart-1: 222 52% 52%;
+    --chart-2: 200 65% 50%;
+    --chart-3: 165 55% 45%;
+    --chart-4: 40 85% 58%;
+    --chart-5: 330 60% 60%;
   }
 
   .dark {
-    /* Pastel & yumuşak — Koyu tema */
-    --background: 260 25% 12%;
-    --foreground: 280 25% 92%;
+    --background: 222 25% 11%;
+    --foreground: 220 20% 92%;
 
-    --card: 260 22% 16%;
-    --card-foreground: 280 25% 92%;
+    --card: 222 22% 15%;
+    --card-foreground: 220 20% 92%;
 
-    --popover: 260 22% 16%;
-    --popover-foreground: 280 25% 92%;
+    --popover: 222 22% 15%;
+    --popover-foreground: 220 20% 92%;
 
-    --primary: 255 70% 74%;
-    --primary-foreground: 260 30% 14%;
+    --primary: 217 75% 64%;
+    --primary-foreground: 222 35% 12%;
 
-    --secondary: 260 18% 22%;
-    --secondary-foreground: 280 20% 88%;
+    --secondary: 222 18% 22%;
+    --secondary-foreground: 220 20% 88%;
 
-    --muted: 260 16% 22%;
-    --muted-foreground: 270 12% 65%;
+    --muted: 222 16% 22%;
+    --muted-foreground: 220 12% 64%;
 
-    --accent: 330 30% 28%;
-    --accent-foreground: 330 60% 88%;
+    --accent: 222 25% 27%;
+    --accent-foreground: 220 30% 88%;
 
-    --destructive: 0 60% 60%;
+    --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 150 45% 55%;
+    --success: 150 50% 50%;
     --success-foreground: 150 40% 98%;
 
-    --border: 260 16% 26%;
-    --input: 260 16% 26%;
-    --ring: 255 70% 74%;
+    --border: 222 16% 25%;
+    --input: 222 16% 25%;
+    --ring: 217 75% 64%;
 
-    --chart-1: 255 70% 74%;
-    --chart-2: 330 65% 74%;
-    --chart-3: 190 60% 62%;
-    --chart-4: 40 80% 66%;
-    --chart-5: 150 50% 62%;
+    --chart-1: 217 75% 66%;
+    --chart-2: 195 70% 58%;
+    --chart-3: 165 55% 52%;
+    --chart-4: 40 80% 62%;
+    --chart-5: 330 60% 66%;
+  }
+
+  /* ============ OKYANUS (erkeksi — koyu mavi + teal) ============ */
+  [data-theme="masculine"] {
+    --background: 205 33% 99%;
+    --card: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --primary: 205 82% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 205 30% 93%;
+    --secondary-foreground: 205 42% 26%;
+    --muted: 205 25% 95%;
+    --accent: 192 55% 89%;
+    --accent-foreground: 200 50% 26%;
+    --border: 205 22% 88%;
+    --input: 205 22% 88%;
+    --ring: 205 82% 38%;
+    --chart-1: 205 80% 46%;
+    --chart-2: 190 65% 44%;
+    --chart-3: 220 60% 56%;
+    --chart-4: 165 55% 42%;
+    --chart-5: 40 80% 56%;
+  }
+  [data-theme="masculine"].dark {
+    --background: 210 30% 10%;
+    --card: 210 26% 14%;
+    --popover: 210 26% 14%;
+    --primary: 200 85% 58%;
+    --primary-foreground: 210 40% 10%;
+    --secondary: 210 20% 21%;
+    --secondary-foreground: 200 20% 88%;
+    --muted: 210 18% 21%;
+    --accent: 200 40% 25%;
+    --accent-foreground: 195 50% 86%;
+    --border: 210 18% 24%;
+    --input: 210 18% 24%;
+    --ring: 200 85% 58%;
+    --chart-1: 200 85% 60%;
+    --chart-2: 190 65% 52%;
+    --chart-3: 220 65% 62%;
+    --chart-4: 165 55% 50%;
+    --chart-5: 40 80% 60%;
+  }
+
+  /* ============ GÜL (kızsal — pembe + lavanta) ============ */
+  [data-theme="feminine"] {
+    --background: 340 50% 99%;
+    --card: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --primary: 330 74% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 330 45% 95%;
+    --secondary-foreground: 330 38% 35%;
+    --muted: 330 30% 96%;
+    --accent: 280 60% 93%;
+    --accent-foreground: 300 40% 38%;
+    --border: 330 28% 91%;
+    --input: 330 28% 91%;
+    --ring: 330 74% 60%;
+    --chart-1: 330 75% 66%;
+    --chart-2: 280 65% 72%;
+    --chart-3: 255 70% 72%;
+    --chart-4: 190 60% 64%;
+    --chart-5: 40 85% 68%;
+  }
+  [data-theme="feminine"].dark {
+    --background: 322 24% 12%;
+    --card: 322 22% 16%;
+    --popover: 322 22% 16%;
+    --primary: 330 76% 68%;
+    --primary-foreground: 322 35% 13%;
+    --secondary: 322 18% 22%;
+    --secondary-foreground: 320 20% 88%;
+    --muted: 322 16% 22%;
+    --accent: 300 28% 28%;
+    --accent-foreground: 300 50% 88%;
+    --border: 322 16% 26%;
+    --input: 322 16% 26%;
+    --ring: 330 76% 68%;
+    --chart-1: 330 76% 70%;
+    --chart-2: 280 60% 74%;
+    --chart-3: 255 65% 74%;
+    --chart-4: 190 58% 64%;
+    --chart-5: 40 80% 68%;
+  }
+
+  /* ============ ZÜMRÜT (dengeli/unisex — yeşil) ============ */
+  [data-theme="emerald"] {
+    --background: 150 32% 99%;
+    --card: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --primary: 158 64% 36%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 150 30% 93%;
+    --secondary-foreground: 158 38% 24%;
+    --muted: 150 24% 95%;
+    --accent: 150 50% 90%;
+    --accent-foreground: 158 45% 25%;
+    --border: 150 22% 88%;
+    --input: 150 22% 88%;
+    --ring: 158 64% 36%;
+    --chart-1: 158 64% 44%;
+    --chart-2: 175 55% 42%;
+    --chart-3: 120 42% 50%;
+    --chart-4: 40 80% 56%;
+    --chart-5: 200 60% 50%;
+  }
+  [data-theme="emerald"].dark {
+    --background: 160 22% 10%;
+    --card: 160 18% 14%;
+    --popover: 160 18% 14%;
+    --primary: 158 58% 52%;
+    --primary-foreground: 160 35% 10%;
+    --secondary: 160 16% 20%;
+    --secondary-foreground: 150 20% 88%;
+    --muted: 160 14% 20%;
+    --accent: 158 30% 23%;
+    --accent-foreground: 150 50% 86%;
+    --border: 160 14% 24%;
+    --input: 160 14% 24%;
+    --ring: 158 58% 52%;
+    --chart-1: 158 58% 54%;
+    --chart-2: 175 55% 50%;
+    --chart-3: 120 42% 56%;
+    --chart-4: 40 80% 60%;
+    --chart-5: 200 60% 56%;
   }
 }
 
