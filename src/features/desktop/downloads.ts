@@ -9,32 +9,52 @@ export const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`;
 
 export type DesktopOS = "windows" | "linux" | "mac";
 
-export const DESKTOP_DOWNLOADS: Record<
-  DesktopOS,
-  { label: string; emoji: string; file: string; note: string }
-> = {
-  windows: {
+export interface DownloadEntry {
+  id: string;
+  os: DesktopOS;
+  label: string;
+  emoji: string;
+  file: string;
+  note: string;
+}
+
+export const DOWNLOADS: DownloadEntry[] = [
+  {
+    id: "windows",
+    os: "windows",
     label: "Windows",
     emoji: "🪟",
     file: "TodoIng-windows.exe",
     note: ".exe kurulum",
   },
-  linux: {
-    label: "Linux",
+  {
+    id: "linux-deb",
+    os: "linux",
+    label: "Linux · .deb",
+    emoji: "🐧",
+    file: "TodoIng-linux.deb",
+    note: "Menüye kurar (Ubuntu/Debian) — önerilen",
+  },
+  {
+    id: "linux-appimage",
+    os: "linux",
+    label: "Linux · .AppImage",
     emoji: "🐧",
     file: "TodoIng-linux.AppImage",
-    note: ".AppImage (çalıştırılabilir)",
+    note: "Taşınabilir, kurulum gerektirmez",
   },
-  mac: {
+  {
+    id: "mac",
+    os: "mac",
     label: "macOS",
     emoji: "🍎",
     file: "TodoIng-mac.dmg",
     note: ".dmg (Apple Silicon)",
   },
-};
+];
 
-export function downloadUrl(os: DesktopOS): string {
-  return `${BASE}/${DESKTOP_DOWNLOADS[os].file}`;
+export function downloadUrl(file: string): string {
+  return `${BASE}/${file}`;
 }
 
 /** Tarayıcının işletim sistemini sezer. */

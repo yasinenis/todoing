@@ -2,12 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "app.todooing.desktop",
   "productName": "TodoIng",
-  "directories": { "output": "release" },
+  "directories": { "output": "release", "buildResources": "build" },
   "files": ["electron/**/*"],
   "linux": {
     "target": ["AppImage", "deb"],
     "category": "Utility",
     "maintainer": "TodoIng",
+    "icon": "build/icon.png",
     "artifactName": "${productName}-linux.${ext}"
   },
   "win": {

@@ -10,15 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import {
-  DESKTOP_DOWNLOADS,
+  DOWNLOADS,
   RELEASES_PAGE,
   detectOS,
   downloadUrl,
   isElectron,
-  type DesktopOS,
 } from "./downloads";
-
-const ORDER: DesktopOS[] = ["windows", "linux", "mac"];
 
 interface Props {
   variant?: ButtonProps["variant"];
@@ -63,23 +60,22 @@ export function DownloadDesktopButton({
           </DialogHeader>
 
           <div className="space-y-2">
-            {ORDER.map((os) => {
-              const item = DESKTOP_DOWNLOADS[os];
-              const isCurrent = current === os;
+            {DOWNLOADS.map((d) => {
+              const isCurrent = current === d.os;
               return (
                 <a
-                  key={os}
-                  href={downloadUrl(os)}
+                  key={d.id}
+                  href={downloadUrl(d.file)}
                   download
                   className={cn(
                     "flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-accent",
                     isCurrent && "border-primary bg-primary/5",
                   )}
                 >
-                  <span className="text-2xl">{item.emoji}</span>
+                  <span className="text-2xl">{d.emoji}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-2 font-medium">
-                      {item.label}
+                    <span className="flex flex-wrap items-center gap-2 font-medium">
+                      {d.label}
                       {isCurrent && (
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
                           senin sistemin
@@ -87,7 +83,7 @@ export function DownloadDesktopButton({
                       )}
                     </span>
                     <span className="block text-xs text-muted-foreground">
-                      {item.note}
+                      {d.note}
                     </span>
                   </span>
                   <Download className="h-4 w-4 shrink-0 text-muted-foreground" />
