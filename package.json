@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "description": "Görevler, hedefler ve alışkanlıklar — kişisel üretkenlik uygulaması.",
+  "author": "TodoIng",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
@@ -10,9 +12,9 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:127.0.0.1:5173 && electron .\"",
-    "electron:build": "electron-builder",
-    "electron:build:linux": "electron-builder --linux",
-    "electron:build:win": "electron-builder --win"
+    "electron:build": "electron-builder --publish never",
+    "electron:build:linux": "electron-builder --linux --publish never",
+    "electron:build:win": "electron-builder --win --publish never"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
