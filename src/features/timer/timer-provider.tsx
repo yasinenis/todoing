@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { requireUserId } from "@/lib/auth-helpers";
 import { qk } from "@/lib/query-keys";
 import { toDayStr } from "@/lib/date";
+import { useAuth } from "@/app/providers/auth-provider";
 import type { Timer } from "@/lib/database.types";
 
 /** Sayacın bir oturumda biriken canlı süresini (saniye) hesaplar. */
@@ -47,6 +48,7 @@ const TimerContext = createContext<TimerContextValue | undefined>(undefined);
 
 export function TimerProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [isPending, setIsPending] = useState(false);
   const [blockSeconds, setBlockState] = useState<number | null>(() => {
@@ -90,6 +92,46 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       };
     }
   }, [isRunning]);
+
+  // Gerçek zamanlı senkron: başka cihazda yapılan değişiklikler anında yansısın.
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`timer-sync-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "timers",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const next =
+            payload.eventType === "DELETE"
+              ? null
+              : (payload.new as unknown as Timer);
+          qc.setQueryData(qk.activeTimer, next);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "tasks",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: qk.tasks() });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [user, qc]);
 
   const invalidate = useCallback(
     (withTotals = false) => {
