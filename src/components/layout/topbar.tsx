@@ -23,7 +23,7 @@ export function Topbar() {
         <img
           src="/icon-512.png"
           alt="TodoIng"
-          className="h-8 w-8 rounded-lg object-contain md:hidden"
+          className="h-12 w-12 rounded-lg object-contain md:hidden"
         />
         <h1 className="text-base font-semibold md:text-lg">{title}</h1>
       </div>

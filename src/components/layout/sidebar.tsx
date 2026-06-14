@@ -9,7 +9,7 @@ export function Sidebar() {
         <img
           src="/icon-512.png"
           alt="TodoIng"
-          className="h-9 w-9 rounded-xl object-contain"
+          className="h-14 w-14 rounded-xl object-contain"
         />
         <span className="text-lg font-bold tracking-tight">TodoIng</span>
       </div>

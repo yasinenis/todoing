@@ -127,7 +127,7 @@ export function LoginPage() {
           <img
             src="/icon-512.png"
             alt="TodoIng"
-            className="h-32 w-32 object-contain drop-shadow-md"
+            className="h-48 w-48 object-contain drop-shadow-md"
           />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">TodoIng</h1>
