@@ -32,11 +32,16 @@ interface TimerContextValue {
   /** Aktif oturumun canlı geçen süresi (saniye, 1sn'de bir güncellenir). */
   liveElapsed: number;
   isPending: boolean;
+  /** Odak bloğu hedefi (saniye) — null ise serbest sayaç. */
+  blockSeconds: number | null;
+  setBlock: (seconds: number | null) => void;
   start: (taskId: string) => Promise<void>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   stop: () => Promise<void>;
 }
+
+const BLOCK_KEY = "todoing-timer-block";
 
 const TimerContext = createContext<TimerContextValue | undefined>(undefined);
 
@@ -44,6 +49,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [isPending, setIsPending] = useState(false);
+  const [blockSeconds, setBlockState] = useState<number | null>(() => {
+    const v = localStorage.getItem(BLOCK_KEY);
+    return v ? Number(v) : null;
+  });
+
+  const setBlock = useCallback((seconds: number | null) => {
+    if (seconds && seconds > 0) localStorage.setItem(BLOCK_KEY, String(seconds));
+    else localStorage.removeItem(BLOCK_KEY);
+    setBlockState(seconds && seconds > 0 ? seconds : null);
+  }, []);
 
   const { data: activeTimer = null } = useQuery({
     queryKey: qk.activeTimer,
@@ -233,7 +248,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     const current = readActive();
     if (!current?.task_id) return;
     const at = Date.now();
-    // Anlık: sayacı boşalt (widget/sayfa hemen sıfırlansın).
+    // Anlık: sayacı boşalt (widget/sayfa hemen sıfırlansın) + bloğu temizle.
     setActive({
       ...current,
       task_id: null,
@@ -242,6 +257,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       accumulated_seconds: 0,
       updated_at: new Date(at).toISOString(),
     });
+    setBlock(null);
     setIsPending(true);
     try {
       const userId = await requireUserId();
@@ -264,7 +280,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsPending(false);
     }
-  }, [readActive, setActive, commitSession, invalidate]);
+  }, [readActive, setActive, setBlock, commitSession, invalidate]);
 
   const liveElapsed = liveElapsedSeconds(activeTimer, nowMs);
 
@@ -276,6 +292,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         isRunning,
         liveElapsed,
         isPending,
+        blockSeconds,
+        setBlock,
         start,
         pause,
         resume,

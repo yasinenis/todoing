@@ -1,13 +1,20 @@
+import { useEffect } from "react";
 import { Pause, Play, Square } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn, formatDuration } from "@/lib/utils";
+import { playChime } from "@/lib/sound";
 import { useTasks } from "@/features/tasks/api";
 import { useTimer, liveElapsedSeconds } from "./timer-provider";
+import { BlockChips } from "./block-chips";
+
+const RING_R = 46;
+const RING_C = 2 * Math.PI * RING_R;
 
 /**
- * Tam ekran odak modu. Sayaç aktifken (bir görev sayılırken) o sekmeyi
- * TAMAMEN (opak) kaplar; altındaki uygulama görünmez ve erişilemez kalır.
- * Yalnızca "Bitir" ile kapanır (duraklatınca açık kalır).
+ * Tam ekran odak modu. Sayaç aktifken sekmeyi tamamen (opak) kaplar.
+ * Odak bloğu seçiliyse hedefe doğru geri sayım + ilerleme halkası gösterir,
+ * dolunca ses + bildirim verir. Yalnızca "Bitir" ile kapanır.
  */
 export function TimerFocus() {
   const {
@@ -16,19 +23,53 @@ export function TimerFocus() {
     isRunning,
     liveElapsed,
     isPending,
+    blockSeconds,
     pause,
     resume,
     stop,
   } = useTimer();
   const { data: tasks } = useTasks();
 
-  if (!activeTaskId) return null;
-
   const task = tasks?.find((t) => t.id === activeTaskId);
-  const sessionElapsed = activeTimer
+  const session = activeTimer
     ? Math.round(liveElapsedSeconds(activeTimer, Date.now()))
     : 0;
   const totalSeconds = (task?.total_seconds ?? 0) + liveElapsed;
+
+  const hasBlock = blockSeconds != null;
+  const blockMin = blockSeconds != null ? Math.round(blockSeconds / 60) : 0;
+  const remaining =
+    blockSeconds != null ? Math.max(0, blockSeconds - session) : 0;
+  const frac =
+    blockSeconds != null && blockSeconds > 0
+      ? Math.min(1, session / blockSeconds)
+      : 0;
+  const completed = blockSeconds != null && session >= blockSeconds;
+
+  // Blok dolunca bir kez: ses + toast + (izin varsa) bildirim.
+  useEffect(() => {
+    if (!completed) return;
+    playChime();
+    toast.success("Blok tamamlandı 🎉", {
+      description: `${Math.round((blockSeconds ?? 0) / 60)} dakikalık odak süresi doldu.`,
+    });
+    if (
+      "Notification" in window &&
+      Notification.permission === "granted" &&
+      document.visibilityState !== "visible"
+    ) {
+      try {
+        new Notification("Blok tamamlandı 🎉", {
+          body: task?.title ?? "Odak süresi doldu",
+        });
+      } catch {
+        /* yok say */
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completed]);
+
+  if (!activeTaskId) return null;
 
   return (
     <div
@@ -36,13 +77,12 @@ export function TimerFocus() {
       role="dialog"
       aria-modal="true"
     >
-      {/* Opak zeminin üzerinde yumuşak pastel gradyan (saydam değil) */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/20"
       />
 
-      <div className="relative z-10 flex w-full max-w-2xl flex-col items-center justify-center gap-10">
+      <div className="relative z-10 flex w-full max-w-2xl flex-col items-center justify-center gap-8">
         <div className="text-center">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             Odak modu
@@ -52,26 +92,90 @@ export function TimerFocus() {
           </h2>
         </div>
 
-        {/* Büyük dairesel sayaç */}
+        {/* Blok süresi seçimi */}
+        <BlockChips />
+
+        {/* Büyük dairesel sayaç (+ blok ilerleme halkası) */}
         <div
           className={cn(
-            "relative flex aspect-square w-72 max-w-[80vw] items-center justify-center rounded-full border-4 transition-colors md:w-[26rem]",
-            isRunning
-              ? "border-primary bg-primary/5"
-              : "border-muted bg-muted/30",
+            "relative flex aspect-square w-72 max-w-[80vw] items-center justify-center rounded-full md:w-[26rem]",
+            hasBlock
+              ? "bg-card/40"
+              : cn(
+                  "border-4",
+                  isRunning
+                    ? "border-primary bg-primary/5"
+                    : "border-muted bg-muted/30",
+                ),
           )}
         >
-          {isRunning && (
+          {hasBlock && (
+            <svg
+              viewBox="0 0 100 100"
+              className="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
+            >
+              <circle
+                cx="50"
+                cy="50"
+                r={RING_R}
+                fill="none"
+                stroke="hsl(var(--muted))"
+                strokeWidth="4"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r={RING_R}
+                fill="none"
+                stroke={
+                  completed ? "hsl(var(--success))" : "hsl(var(--primary))"
+                }
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={RING_C}
+                strokeDashoffset={RING_C * (1 - frac)}
+                style={{ transition: "stroke-dashoffset 0.5s linear" }}
+              />
+            </svg>
+          )}
+          {!hasBlock && isRunning && (
             <span className="pointer-events-none absolute inset-0 animate-ping rounded-full border-2 border-primary/30" />
           )}
-          <div className="text-center">
-            <p className="font-mono text-6xl font-bold tabular-nums md:text-8xl">
-              {formatDuration(totalSeconds, true)}
-            </p>
-            <p className="mt-3 text-sm text-muted-foreground">
-              {isRunning ? "Çalışıyor" : "Duraklatıldı"} · bu oturum{" "}
-              {formatDuration(sessionElapsed, true)}
-            </p>
+
+          <div className="relative z-10 px-6 text-center">
+            {hasBlock ? (
+              completed ? (
+                <>
+                  <p className="text-3xl font-bold md:text-5xl">
+                    Tamamlandı 🎉
+                  </p>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {blockMin} dk hedef doldu · geçen{" "}
+                    {formatDuration(session, true)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-mono text-6xl font-bold tabular-nums md:text-8xl">
+                    {formatDuration(remaining, true)}
+                  </p>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    kalan · hedef {blockMin} dk{" "}
+                    {!isRunning && "· duraklatıldı"}
+                  </p>
+                </>
+              )
+            ) : (
+              <>
+                <p className="font-mono text-6xl font-bold tabular-nums md:text-8xl">
+                  {formatDuration(totalSeconds, true)}
+                </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {isRunning ? "Çalışıyor" : "Duraklatıldı"} · bu oturum{" "}
+                  {formatDuration(session, true)}
+                </p>
+              </>
+            )}
           </div>
         </div>
 

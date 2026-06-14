@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { cn, formatDuration } from "@/lib/utils";
 import { useTasks } from "@/features/tasks/api";
 import { useTimer, liveElapsedSeconds } from "./timer-provider";
+import { BlockChips } from "./block-chips";
 
 export function TimerPage() {
   const {
@@ -113,6 +114,14 @@ export function TimerPage() {
         />
       ) : (
         <div className="space-y-4">
+          <div className="rounded-2xl border bg-card/40 p-4">
+            <p className="mb-3 text-sm font-medium">Odak bloğu (opsiyonel)</p>
+            <BlockChips className="justify-start" />
+            <p className="mt-3 text-xs text-muted-foreground">
+              Bir süre seçersen, görev başlattığında geri sayım ve hedef
+              halkası görünür; süre dolunca uyarı verilir.
+            </p>
+          </div>
           <p className="text-sm text-muted-foreground">
             Başlatmak için bir görev seç:
           </p>
