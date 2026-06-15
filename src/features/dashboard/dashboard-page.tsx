@@ -1,6 +1,12 @@
 import { useMemo } from "react";
-import { Clock, Flame, CheckCircle2, Target, Sparkles } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
+import {
+  Clock,
+  Flame,
+  CheckCircle2,
+  Target,
+  Sparkles,
+  Sunrise,
+} from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +19,7 @@ import { useCategories } from "@/features/categories/api";
 import { useGoals } from "@/features/goals/api";
 import { useHabits, useHabitLogs } from "@/features/habits/api";
 import { computeStreaks } from "@/features/habits/habit-stats";
+import { useMyProfile } from "@/features/profile/api";
 import { GoalCard } from "@/features/goals/goal-card";
 import { LONG_TERM } from "@/features/goals/goal-meta";
 import { useTimeEntries } from "./api";
@@ -30,7 +37,9 @@ export function DashboardPage() {
   const { data: goals } = useGoals();
   const { data: habits } = useHabits();
   const { data: habitLogs } = useHabitLogs();
+  const { data: profile } = useMyProfile();
 
+  const greetName = profile?.username ?? profile?.display_name ?? "";
   const todayStr = today();
 
   const categoryMap = useMemo(
@@ -86,10 +95,19 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`Merhaba 👋`}
-        description={formatLong(new Date())}
-      />
+      <div className="mb-6 flex items-center gap-3">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Sunrise className="h-6 w-6" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="truncate text-2xl font-bold tracking-tight">
+            Merhaba{greetName ? `, ${greetName}` : ""}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {formatLong(new Date())}
+          </p>
+        </div>
+      </div>
 
       {/* Motivasyon */}
       <Card className="border-primary/30 bg-gradient-to-br from-primary/10 to-accent/20">
