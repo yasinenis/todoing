@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pause, Play, Square } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ export function TimerFocus() {
     stop,
   } = useTimer();
   const { data: tasks } = useTasks();
+  const [confirming, setConfirming] = useState(false);
 
   const task = tasks?.find((t) => t.id === activeTaskId);
   const session = activeTimer
@@ -173,41 +174,73 @@ export function TimerFocus() {
 
         {/* Kontroller */}
         <div className="flex w-full max-w-md flex-col items-center gap-3">
-          <div className="flex w-full items-center justify-center gap-3">
-            {isRunning ? (
-              <Button
-                size="lg"
-                variant="secondary"
-                className="h-16 flex-1 text-lg"
-                onClick={() => pause()}
-                disabled={isPending}
-              >
-                <Pause className="h-6 w-6" /> Duraklat
-              </Button>
-            ) : (
-              <Button
-                size="lg"
-                className="h-16 flex-1 text-lg"
-                onClick={() => resume()}
-                disabled={isPending}
-              >
-                <Play className="h-6 w-6" /> Devam et
-              </Button>
-            )}
-            <Button
-              size="lg"
-              variant="destructive"
-              className="h-16 flex-1 text-lg"
-              onClick={() => stop()}
-              disabled={isPending}
-            >
-              <Square className="h-6 w-6" /> Bitir
-            </Button>
-          </div>
-          <p className="text-center text-xs text-muted-foreground">
-            Odak modu yalnızca "Bitir" ile kapanır. Süre kaydedilir; görevin
-            toplam süresi korunur.
-          </p>
+          {confirming ? (
+            <div className="w-full space-y-3 text-center">
+              <p className="text-base font-medium">
+                Sayacı bitirmek istediğine emin misin?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Geçen süre göreve kaydedilecek.
+              </p>
+              <div className="flex w-full items-center justify-center gap-3">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 flex-1 text-base"
+                  onClick={() => setConfirming(false)}
+                >
+                  Vazgeç
+                </Button>
+                <Button
+                  size="lg"
+                  variant="destructive"
+                  className="h-14 flex-1 text-base"
+                  onClick={() => stop()}
+                  disabled={isPending}
+                >
+                  <Square className="h-5 w-5" /> Evet, bitir
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex w-full items-center justify-center gap-3">
+                {isRunning ? (
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="h-16 flex-1 text-lg"
+                    onClick={() => pause()}
+                    disabled={isPending}
+                  >
+                    <Pause className="h-6 w-6" /> Duraklat
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="h-16 flex-1 text-lg"
+                    onClick={() => resume()}
+                    disabled={isPending}
+                  >
+                    <Play className="h-6 w-6" /> Devam et
+                  </Button>
+                )}
+                <Button
+                  size="lg"
+                  variant="destructive"
+                  className="h-16 flex-1 text-lg"
+                  onClick={() => setConfirming(true)}
+                  disabled={isPending}
+                >
+                  <Square className="h-6 w-6" /> Bitir
+                </Button>
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Odak modu yalnızca "Bitir" ile kapanır. Süre kaydedilir;
+                görevin toplam süresi korunur.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

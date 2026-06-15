@@ -67,6 +67,7 @@ export type SoundKind =
   | "complete"
   | "start"
   | "pause"
+  | "stop"
   | "hour";
 
 export function playSound(kind: SoundKind) {
@@ -100,6 +101,11 @@ export function playSound(kind: SoundKind) {
       // Yumuşak "saat doldu" çanı (iki nazik nota).
       tone(c, 784, 0, 0.22, 0.16);
       tone(c, 1047, 0.16, 0.28, 0.16);
+      break;
+    case "stop":
+      // Nötr / hafif olumsuz "bitti" sesi — kutlama değil, üzücü de değil.
+      tone(c, 392, 0, 0.12, 0.15);
+      tone(c, 311, 0.11, 0.16, 0.15);
       break;
   }
 }

@@ -319,7 +319,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       updated_at: new Date(at).toISOString(),
     });
     setBlock(null);
-    playSound("complete");
+    playSound("stop");
     setIsPending(true);
     try {
       const userId = await requireUserId();
