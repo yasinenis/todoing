@@ -21,7 +21,6 @@ export function TimerFocus() {
     activeTaskId,
     isRunning,
     liveElapsed,
-    isPending,
     blockSeconds,
     pause,
     resume,
@@ -196,7 +195,6 @@ export function TimerFocus() {
                   variant="destructive"
                   className="h-14 flex-1 text-base"
                   onClick={() => stop()}
-                  disabled={isPending}
                 >
                   <Square className="h-5 w-5" /> Evet, bitir
                 </Button>
@@ -211,7 +209,6 @@ export function TimerFocus() {
                     variant="secondary"
                     className="h-16 flex-1 text-lg"
                     onClick={() => pause()}
-                    disabled={isPending}
                   >
                     <Pause className="h-6 w-6" /> Duraklat
                   </Button>
@@ -220,7 +217,6 @@ export function TimerFocus() {
                     size="lg"
                     className="h-16 flex-1 text-lg"
                     onClick={() => resume()}
-                    disabled={isPending}
                   >
                     <Play className="h-6 w-6" /> Devam et
                   </Button>
@@ -230,7 +226,6 @@ export function TimerFocus() {
                   variant="destructive"
                   className="h-16 flex-1 text-lg"
                   onClick={() => setConfirming(true)}
-                  disabled={isPending}
                 >
                   <Square className="h-6 w-6" /> Bitir
                 </Button>
