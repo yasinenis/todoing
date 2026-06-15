@@ -117,3 +117,11 @@ src/
   lib/          # supabase istemcisi, tipler, tarih/renk yardımcıları, query anahtarları
 supabase/migrations/  # SQL şema + RLS + storage
 ```
+
+## Lisans
+
+[MIT](LICENSE) © 2026 Yasin Enis
+
+Bu yazılım Yasin Enis tarafından geliştirilmiştir. Kullanan, kopyalayan veya
+dağıtan herkes telif/lisans bildirimini (yani bu krediyi) korumak zorundadır.
+

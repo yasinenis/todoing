@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Görevler, hedefler ve alışkanlıklar — kişisel üretkenlik uygulaması.",
-  "author": "TodoIng",
+  "author": "Yasin Enis <yasin.enis.tr@gmail.com>",
+  "license": "MIT",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
