@@ -68,6 +68,11 @@ export function TimerFocus() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed]);
 
+  // Sayaç pasifken onay durumunu sıfırla (yeni sayaçta temiz açılsın).
+  useEffect(() => {
+    if (!activeTaskId) setConfirming(false);
+  }, [activeTaskId]);
+
   if (!activeTaskId) return null;
 
   return (
