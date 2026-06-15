@@ -66,7 +66,8 @@ export type SoundKind =
   | "success"
   | "complete"
   | "start"
-  | "pause";
+  | "pause"
+  | "hour";
 
 export function playSound(kind: SoundKind) {
   if (!enabled) return;
@@ -94,6 +95,11 @@ export function playSound(kind: SoundKind) {
       tone(c, 660, 0, 0.12, 0.2);
       tone(c, 990, 0.12, 0.12, 0.2);
       tone(c, 1320, 0.24, 0.22, 0.2);
+      break;
+    case "hour":
+      // Yumuşak "saat doldu" çanı (iki nazik nota).
+      tone(c, 784, 0, 0.22, 0.16);
+      tone(c, 1047, 0.16, 0.28, 0.16);
       break;
   }
 }

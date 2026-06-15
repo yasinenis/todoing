@@ -94,6 +94,19 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [isRunning]);
 
+  // İleri (normal) modda her tam saatte ufak bir "saat doldu" sesi.
+  const lastHourRef = useRef(0);
+  useEffect(() => {
+    if (!isRunning || blockSeconds != null) return; // sadece ileri sayımda
+    const elapsed = liveElapsedSeconds(activeTimer, nowMs);
+    const hours = Math.floor(elapsed / 3600);
+    if (hours < lastHourRef.current) lastHourRef.current = hours; // oturum sıfırlandı
+    if (hours >= 1 && hours > lastHourRef.current) {
+      lastHourRef.current = hours;
+      playSound("hour");
+    }
+  }, [nowMs, isRunning, blockSeconds, activeTimer]);
+
   // Gerçek zamanlı senkron: başka cihazda yapılan değişiklikler anında yansısın.
   useEffect(() => {
     if (!user) return;

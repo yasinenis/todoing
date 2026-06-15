@@ -6,7 +6,6 @@ import { cn, formatDuration } from "@/lib/utils";
 import { playChime } from "@/lib/sound";
 import { useTasks } from "@/features/tasks/api";
 import { useTimer, liveElapsedSeconds } from "./timer-provider";
-import { BlockChips } from "./block-chips";
 
 const RING_R = 46;
 const RING_C = 2 * Math.PI * RING_R;
@@ -91,9 +90,6 @@ export function TimerFocus() {
             {task?.title ?? "Görev"}
           </h2>
         </div>
-
-        {/* Blok süresi seçimi */}
-        <BlockChips />
 
         {/* Büyük dairesel sayaç (+ blok ilerleme halkası) */}
         <div

@@ -112,11 +112,14 @@ export function TimerPage() {
       ) : (
         <div className="space-y-4">
           <div className="rounded-2xl border bg-card/40 p-4">
-            <p className="mb-3 text-sm font-medium">Odak bloğu (opsiyonel)</p>
+            <p className="mb-3 text-sm font-medium">Sayaç modu</p>
             <BlockChips className="justify-start" />
             <p className="mt-3 text-xs text-muted-foreground">
-              Bir süre seçersen, görev başlattığında geri sayım ve hedef
-              halkası görünür; süre dolunca uyarı verilir.
+              <strong>Serbest (ileri):</strong> yukarı sayar, her tam saatte
+              ufak bir uyarı sesi verir. <strong>Süre / Özel:</strong> seçtiğin
+              kadar geri sayım yapar; dolunca uyarır.{" "}
+              <em>Mod, sayaç başlatıldıktan sonra değişmez</em> — başlamadan
+              önce seç.
             </p>
           </div>
           <p className="text-sm text-muted-foreground">
