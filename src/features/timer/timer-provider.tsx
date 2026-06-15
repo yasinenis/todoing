@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { requireUserId } from "@/lib/auth-helpers";
 import { qk } from "@/lib/query-keys";
 import { toDayStr } from "@/lib/date";
+import { playSound } from "@/lib/sound";
 import { useAuth } from "@/app/providers/auth-provider";
 import type { Timer } from "@/lib/database.types";
 
@@ -193,6 +194,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         accumulated_seconds: sameTask ? current!.accumulated_seconds : 0,
         updated_at: iso,
       });
+      playSound("start");
       setIsPending(true);
       try {
         const userId = await requireUserId();
@@ -244,6 +246,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       accumulated_seconds: accumulated,
       updated_at: new Date(at).toISOString(),
     });
+    playSound("pause");
     setIsPending(true);
     try {
       const userId = await requireUserId();
@@ -271,6 +274,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     if (!current?.task_id || current.running) return;
     const iso = new Date().toISOString();
     setActive({ ...current, running: true, started_at: iso, updated_at: iso });
+    playSound("start");
     setIsPending(true);
     try {
       const userId = await requireUserId();
@@ -302,6 +306,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       updated_at: new Date(at).toISOString(),
     });
     setBlock(null);
+    playSound("complete");
     setIsPending(true);
     try {
       const userId = await requireUserId();

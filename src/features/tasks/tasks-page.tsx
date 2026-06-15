@@ -110,9 +110,9 @@ export function TasksPage() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20" />
+            <Skeleton key={i} className="h-12" />
           ))}
         </div>
       ) : !filtered.length ? (
@@ -127,7 +127,7 @@ export function TasksPage() {
           }
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           {filtered.map((task) => (
             <TaskCard
               key={task.id}

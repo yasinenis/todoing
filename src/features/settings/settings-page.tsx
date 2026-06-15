@@ -1,13 +1,16 @@
-import { Check, Monitor, Moon, RefreshCw, Sun } from "lucide-react";
+import { useState } from "react";
+import { Check, Monitor, Moon, RefreshCw, Sun, Volume2 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useTheme, PALETTES } from "@/app/providers/theme-provider";
 import { useAuth } from "@/app/providers/auth-provider";
 import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
 import { isElectron } from "@/features/desktop/downloads";
 import { useElectronUpdate } from "@/features/desktop/electron-update";
 import { ProfileCard } from "@/features/profile/profile-card";
+import { getSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
@@ -20,6 +23,12 @@ export function SettingsPage() {
   const { theme, setTheme, palette, setPalette } = useTheme();
   const { user, signOut } = useAuth();
   const update = useElectronUpdate();
+  const [soundOn, setSoundOn] = useState(getSoundEnabled());
+
+  const toggleSound = (v: boolean) => {
+    setSoundEnabled(v);
+    setSoundOn(v);
+  };
 
   return (
     <div className="space-y-6">
@@ -90,6 +99,30 @@ export function SettingsPage() {
               </button>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Ses</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+              <Volume2 className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-sm font-medium">Uygulama sesleri</p>
+              <p className="text-xs text-muted-foreground">
+                Görev/alışkanlık tamamlama, sayaç ve dokunma sesleri.
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={soundOn}
+            onCheckedChange={toggleSound}
+            aria-label="Sesler"
+          />
         </CardContent>
       </Card>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { playSound } from "@/lib/sound";
 import {
   Dialog,
   DialogContent,
@@ -83,6 +84,7 @@ export function TaskFormDialog({
         toast.success("Görev güncellendi");
       } else {
         await create.mutateAsync(payload);
+        playSound("tap");
         toast.success("Görev eklendi");
       }
       onOpenChange(false);

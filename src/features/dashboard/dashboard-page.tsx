@@ -18,6 +18,7 @@ import { LONG_TERM } from "@/features/goals/goal-meta";
 import { useTimeEntries } from "./api";
 import { todaySeconds } from "./aggregations";
 import { WorkHoursChart } from "./work-hours-chart";
+import { TodayHabits } from "./today-habits";
 import { CategoryDistribution } from "./category-distribution";
 import { StatCard } from "./stat-card";
 import { quoteOfTheDay } from "./quotes";
@@ -135,6 +136,8 @@ export function DashboardPage() {
           />
         </FadeUp>
       </Stagger>
+
+      <TodayHabits />
 
       {isLoading ? (
         <Skeleton className="h-72" />

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { today } from "@/lib/date";
+import { playSound } from "@/lib/sound";
 import { hexToRgba } from "@/lib/colors";
 import type { Habit } from "@/lib/database.types";
 import { ContributionHeatmap } from "./contribution-heatmap";
@@ -32,8 +33,10 @@ export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
   const { current, best } = computeStreaks(logs, target);
   const rate = completionRate(logs, target, 30);
 
-  const setCount = (next: number) =>
+  const setCount = (next: number) => {
+    playSound(next >= target && next > todayCount ? "success" : "tap");
     setLog.mutate({ habit_id: habit.id, day: todayStr, count: next });
+  };
 
   return (
     <Card>
