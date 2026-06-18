@@ -15,9 +15,14 @@
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:127.0.0.1:5173 && electron .\"",
     "electron:build": "electron-builder --publish never",
     "electron:build:linux": "electron-builder --linux --publish never",
-    "electron:build:win": "electron-builder --win --publish never"
+    "electron:build:win": "electron-builder --win --publish never",
+    "cap:sync": "cap sync android",
+    "android:open": "cap open android",
+    "android:apk": "npm run build && cap sync android && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",
@@ -47,21 +52,22 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0",
-    "electron": "^31.7.0",
-    "electron-builder": "^25.1.8",
-    "wait-on": "^8.0.1",
+    "@capacitor/cli": "^6.2.1",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
+    "concurrently": "^9.1.0",
+    "electron": "^31.7.0",
+    "electron-builder": "^25.1.8",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.5.3",
     "vite": "^5.4.0",
     "vite-plugin-pwa": "^0.21.2",
+    "wait-on": "^8.0.1",
     "workbox-window": "^7.3.0"
   }
 }

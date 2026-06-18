@@ -1,0 +1,58 @@
+name: Android (APK) build
+
+# v* etiketi push'lanınca APK üretip Release'e ekler.
+# "Run workflow" ile elle de tetiklenebilir (artifact olarak iner).
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Web build
+        run: npm run build
+
+      - name: Capacitor sync (android)
+        run: npx cap sync android
+
+      - name: APK üret (debug)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: APK'yı yeniden adlandır
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk TodoIng.apk
+
+      - name: Artifact olarak yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: todoing-android
+          path: TodoIng.apk
+
+      - name: Release'e ekle (etiketse)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: TodoIng.apk
