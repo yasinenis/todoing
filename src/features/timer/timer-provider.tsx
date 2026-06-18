@@ -14,6 +14,12 @@ import { requireUserId } from "@/lib/auth-helpers";
 import { qk } from "@/lib/query-keys";
 import { toDayStr } from "@/lib/date";
 import { playSound } from "@/lib/sound";
+import { formatDuration } from "@/lib/utils";
+import {
+  showRunningNotification,
+  showPausedNotification,
+  clearNotification,
+} from "./timer-notification";
 import { useAuth } from "@/app/providers/auth-provider";
 import type { Timer } from "@/lib/database.types";
 
@@ -208,6 +214,15 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         updated_at: iso,
       });
       playSound("start");
+      {
+        const elapsedSec = sameTask ? (current?.accumulated_seconds ?? 0) : 0;
+        showRunningNotification(
+          blockSeconds != null
+            ? at + Math.max(0, blockSeconds - elapsedSec) * 1000
+            : at - elapsedSec * 1000,
+          blockSeconds != null,
+        );
+      }
       setIsPending(true);
       try {
         const userId = await requireUserId();
@@ -244,7 +259,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         setIsPending(false);
       }
     },
-    [readActive, setActive, commitSession, invalidate],
+    [readActive, setActive, commitSession, invalidate, blockSeconds],
   );
 
   const pause = useCallback(async () => {
@@ -260,6 +275,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       updated_at: new Date(at).toISOString(),
     });
     playSound("pause");
+    showPausedNotification(`${formatDuration(accumulated, true)} · duraklatıldı`);
     setIsPending(true);
     try {
       const userId = await requireUserId();
@@ -280,7 +296,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsPending(false);
     }
-  }, [readActive, setActive, invalidate]);
+  }, [readActive, setActive, invalidate, blockSeconds]);
 
   const resume = useCallback(async () => {
     const current = readActive();
@@ -288,6 +304,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     const iso = new Date().toISOString();
     setActive({ ...current, running: true, started_at: iso, updated_at: iso });
     playSound("start");
+    {
+      const elapsedSec = current.accumulated_seconds ?? 0;
+      const at = Date.parse(iso);
+      showRunningNotification(
+        blockSeconds != null
+          ? at + Math.max(0, blockSeconds - elapsedSec) * 1000
+          : at - elapsedSec * 1000,
+        blockSeconds != null,
+      );
+    }
     setIsPending(true);
     try {
       const userId = await requireUserId();
@@ -303,7 +329,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsPending(false);
     }
-  }, [readActive, setActive, invalidate]);
+  }, [readActive, setActive, invalidate, blockSeconds]);
 
   const stop = useCallback(async () => {
     const current = readActive();
@@ -320,6 +346,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     });
     setBlock(null);
     playSound("stop");
+    clearNotification();
     setIsPending(true);
     try {
       const userId = await requireUserId();
