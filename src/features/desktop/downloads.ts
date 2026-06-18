@@ -13,7 +13,7 @@ export interface DownloadEntry {
   id: string;
   os: DownloadOS;
   label: string;
-  emoji?: string;
+  icon: string;
   file: string;
   note: string;
 }
@@ -23,31 +23,23 @@ export const DOWNLOADS: DownloadEntry[] = [
     id: "windows",
     os: "windows",
     label: "Windows",
-    emoji: "🪟",
+    icon: "/platform/windows.png",
     file: "TodoIng-windows.exe",
     note: ".exe kurulum",
   },
   {
     id: "linux-deb",
     os: "linux",
-    label: "Linux · .deb",
-    emoji: "🐧",
+    label: "Linux",
+    icon: "/platform/linux.png",
     file: "TodoIng-linux.deb",
-    note: "Menüye kurar (Ubuntu/Debian) — önerilen",
-  },
-  {
-    id: "linux-appimage",
-    os: "linux",
-    label: "Linux · .AppImage",
-    emoji: "🐧",
-    file: "TodoIng-linux.AppImage",
-    note: "Taşınabilir, kurulum gerektirmez",
+    note: ".deb — Ubuntu/Debian",
   },
   {
     id: "mac",
     os: "mac",
     label: "macOS",
-    emoji: "🍎",
+    icon: "/platform/macos.png",
     file: "TodoIng-mac.dmg",
     note: ".dmg (Apple Silicon)",
   },
@@ -55,6 +47,7 @@ export const DOWNLOADS: DownloadEntry[] = [
     id: "android",
     os: "android",
     label: "Android",
+    icon: "/platform/android.png",
     file: "TodoIng.apk",
     note: ".apk — telefona kur (sideload)",
   },

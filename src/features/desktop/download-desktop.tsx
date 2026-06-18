@@ -17,31 +17,6 @@ import {
   isElectron,
 } from "./downloads";
 
-/** Android markasının yeşil robot başı ikonu. */
-function AndroidIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <path
-        d="M6.8 5.4 5.3 3.1"
-        stroke="#3DDC84"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M17.2 5.4 18.7 3.1"
-        stroke="#3DDC84"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path d="M4 13 a8 8 0 0 1 16 0 Z" fill="#3DDC84" />
-      <circle cx="9" cy="9" r="1.05" fill="#fff" />
-      <circle cx="15" cy="9" r="1.05" fill="#fff" />
-    </svg>
-  );
-}
-
 interface Props {
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
@@ -97,11 +72,11 @@ export function DownloadDesktopButton({
                     isCurrent && "border-primary bg-primary/5",
                   )}
                 >
-                  {d.os === "android" ? (
-                    <AndroidIcon className="h-7 w-7 shrink-0" />
-                  ) : (
-                    <span className="text-2xl">{d.emoji}</span>
-                  )}
+                  <img
+                    src={d.icon}
+                    alt=""
+                    className="h-8 w-8 shrink-0 object-contain"
+                  />
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2 font-medium">
                       {d.label}
