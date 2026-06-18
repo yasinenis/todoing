@@ -1,10 +1,12 @@
 package app.todooing.mobile;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
@@ -30,6 +32,7 @@ public class TimerNotificationPlugin extends Plugin {
             NotificationChannel ch = new NotificationChannel(
                     CHANNEL_ID, "Sayaç", NotificationManager.IMPORTANCE_LOW);
             ch.setShowBadge(false);
+            ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             NotificationManager nm =
                     (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm != null) nm.createNotificationChannel(ch);
@@ -43,7 +46,10 @@ public class TimerNotificationPlugin extends Plugin {
                 ctx, 0, launch,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         return new NotificationCompat.Builder(ctx, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_stat_timer)
+                .setSmallIcon(R.drawable.ic_stat_logo)
+                .setLargeIcon(
+                        BitmapFactory.decodeResource(
+                                ctx.getResources(), R.drawable.ic_notif_logo))
                 .setContentTitle(title)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)

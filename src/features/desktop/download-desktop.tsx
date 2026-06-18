@@ -14,7 +14,7 @@ import {
   RELEASES_PAGE,
   detectOS,
   downloadUrl,
-  isElectron,
+  isNativeApp,
 } from "./downloads";
 
 interface Props {
@@ -33,8 +33,8 @@ export function DownloadDesktopButton({
 }: Props) {
   const [open, setOpen] = useState(false);
 
-  // Masaüstü uygulamasının içindeysek indirme butonunu gösterme.
-  if (isElectron()) return null;
+  // Native uygulamanın (masaüstü/mobil) içindeysek indirme butonunu gösterme.
+  if (isNativeApp()) return null;
 
   const current = detectOS();
 

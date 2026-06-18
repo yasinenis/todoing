@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme, PALETTES } from "@/app/providers/theme-provider";
 import { useAuth } from "@/app/providers/auth-provider";
 import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
-import { isElectron } from "@/features/desktop/downloads";
+import { isNativeApp } from "@/features/desktop/downloads";
 import { useElectronUpdate } from "@/features/desktop/electron-update";
 import { ProfileCard } from "@/features/profile/profile-card";
 import { getSoundEnabled, setSoundEnabled } from "@/lib/sound";
@@ -126,7 +126,7 @@ export function SettingsPage() {
         </CardContent>
       </Card>
 
-      {!isElectron() && (
+      {!isNativeApp() && (
         <Card>
           <CardHeader>
             <CardTitle>Uygulamayı indir</CardTitle>

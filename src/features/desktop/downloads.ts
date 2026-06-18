@@ -2,6 +2,8 @@
 // Dosyalar GitHub Releases'e sabit adlarla yüklendiği için "latest/download/<dosya>"
 // her zaman en güncel sürüme gider.
 
+import { Capacitor } from "@capacitor/core";
+
 const REPO = "yasinenis/todoing";
 const BASE = `https://github.com/${REPO}/releases/latest/download`;
 
@@ -74,4 +76,14 @@ export function isElectron(): boolean {
     typeof navigator !== "undefined" &&
     navigator.userAgent.toLowerCase().includes("electron")
   );
+}
+
+/** Native bir uygulamada mıyız (Electron masaüstü VEYA Capacitor/Android)? */
+export function isNativeApp(): boolean {
+  if (isElectron()) return true;
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
 }

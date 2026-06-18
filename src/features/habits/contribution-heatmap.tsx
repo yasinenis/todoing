@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { format, isAfter, startOfDay } from "date-fns";
 import { tr } from "date-fns/locale";
 import { toDayStr } from "@/lib/date";
@@ -26,9 +26,16 @@ export function ContributionHeatmap({
 }: Props) {
   const cols = useMemo(() => buildWeeks(weeks), [weeks]);
   const todayStart = startOfDay(new Date());
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Açılışta en sağa kaydır (bugün/son haftalar görünsün).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, [cols]);
 
   return (
-    <div className="overflow-x-auto pb-1">
+    <div ref={scrollRef} className="overflow-x-auto pb-1">
       <div className="inline-flex flex-col gap-1">
         {/* Ay etiketleri */}
         <div
