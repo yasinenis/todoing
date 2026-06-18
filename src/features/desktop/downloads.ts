@@ -1,19 +1,19 @@
-// Masaüstü (Electron) indirme bağlantıları.
-// Dosyalar GitHub Releases'e versiyonsuz sabit adlarla yüklendiği için
-// "latest/download/<dosya>" her zaman en güncel sürüme gider.
+// Masaüstü + Android indirme bağlantıları.
+// Dosyalar GitHub Releases'e sabit adlarla yüklendiği için "latest/download/<dosya>"
+// her zaman en güncel sürüme gider.
 
 const REPO = "yasinenis/todoing";
 const BASE = `https://github.com/${REPO}/releases/latest/download`;
 
 export const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`;
 
-export type DesktopOS = "windows" | "linux" | "mac";
+export type DownloadOS = "windows" | "linux" | "mac" | "android";
 
 export interface DownloadEntry {
   id: string;
-  os: DesktopOS;
+  os: DownloadOS;
   label: string;
-  emoji: string;
+  emoji?: string;
   file: string;
   note: string;
 }
@@ -51,6 +51,13 @@ export const DOWNLOADS: DownloadEntry[] = [
     file: "TodoIng-mac.dmg",
     note: ".dmg (Apple Silicon)",
   },
+  {
+    id: "android",
+    os: "android",
+    label: "Android",
+    file: "TodoIng.apk",
+    note: ".apk — telefona kur (sideload)",
+  },
 ];
 
 export function downloadUrl(file: string): string {
@@ -58,10 +65,12 @@ export function downloadUrl(file: string): string {
 }
 
 /** Tarayıcının işletim sistemini sezer. */
-export function detectOS(): DesktopOS | "other" {
+export function detectOS(): DownloadOS | "other" {
   const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes("android")) return "android";
   if (ua.includes("win")) return "windows";
-  if (ua.includes("mac")) return "mac";
+  if (ua.includes("mac") || ua.includes("iphone") || ua.includes("ipad"))
+    return "mac";
   if (ua.includes("linux") || ua.includes("x11")) return "linux";
   return "other";
 }

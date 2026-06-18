@@ -17,6 +17,31 @@ import {
   isElectron,
 } from "./downloads";
 
+/** Android markasının yeşil robot başı ikonu. */
+function AndroidIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path
+        d="M6.8 5.4 5.3 3.1"
+        stroke="#3DDC84"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M17.2 5.4 18.7 3.1"
+        stroke="#3DDC84"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path d="M4 13 a8 8 0 0 1 16 0 Z" fill="#3DDC84" />
+      <circle cx="9" cy="9" r="1.05" fill="#fff" />
+      <circle cx="15" cy="9" r="1.05" fill="#fff" />
+    </svg>
+  );
+}
+
 interface Props {
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
@@ -24,12 +49,12 @@ interface Props {
   label?: string;
 }
 
-/** "Masaüstü uygulamasını indir" — tıklanınca OS seçtiren ve direkt indiren buton. */
+/** "Uygulamayı indir" — tıklanınca platform seçtiren ve direkt indiren buton. */
 export function DownloadDesktopButton({
   variant = "outline",
   size,
   className,
-  label = "Masaüstü uygulamasını indir",
+  label = "Uygulamayı indir",
 }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -52,10 +77,10 @@ export function DownloadDesktopButton({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Masaüstü uygulamasını indir</DialogTitle>
+            <DialogTitle>Uygulamayı indir</DialogTitle>
             <DialogDescription>
-              İşletim sistemini seç; indirme hemen başlar. Veriler web ile
-              senkron çalışır.
+              Platformunu seç; indirme hemen başlar. Veriler web ile senkron
+              çalışır.
             </DialogDescription>
           </DialogHeader>
 
@@ -72,13 +97,17 @@ export function DownloadDesktopButton({
                     isCurrent && "border-primary bg-primary/5",
                   )}
                 >
-                  <span className="text-2xl">{d.emoji}</span>
+                  {d.os === "android" ? (
+                    <AndroidIcon className="h-7 w-7 shrink-0" />
+                  ) : (
+                    <span className="text-2xl">{d.emoji}</span>
+                  )}
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2 font-medium">
                       {d.label}
                       {isCurrent && (
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
-                          senin sistemin
+                          senin cihazın
                         </span>
                       )}
                     </span>

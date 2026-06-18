@@ -129,12 +129,12 @@ export function SettingsPage() {
       {!isElectron() && (
         <Card>
           <CardHeader>
-            <CardTitle>Masaüstü uygulaması</CardTitle>
+            <CardTitle>Uygulamayı indir</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center justify-between gap-3">
             <p className="max-w-sm text-sm text-muted-foreground">
-              Windows, Linux veya macOS için masaüstü sürümünü indir. Web ve
-              telefonla aynı veriyi kullanır, senkron çalışır.
+              Windows, Linux, macOS veya Android (.apk) sürümünü indir. Hepsi
+              web ile aynı veriyi kullanır, senkron çalışır.
             </p>
             <DownloadDesktopButton />
           </CardContent>
