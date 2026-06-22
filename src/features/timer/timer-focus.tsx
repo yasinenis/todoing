@@ -165,11 +165,11 @@ export function TimerFocus() {
             ) : (
               <>
                 <p className="font-mono text-6xl font-bold tabular-nums md:text-8xl">
-                  {formatDuration(totalSeconds, true)}
+                  {formatDuration(session, true)}
                 </p>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  {isRunning ? "Çalışıyor" : "Duraklatıldı"} · bu oturum{" "}
-                  {formatDuration(session, true)}
+                  {isRunning ? "Çalışıyor" : "Duraklatıldı"} · bu konuda toplam{" "}
+                  {formatDuration(totalSeconds, true)}
                 </p>
               </>
             )}
