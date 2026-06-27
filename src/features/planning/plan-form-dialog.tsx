@@ -18,10 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { fromDayStr, formatLong, today } from "@/lib/date";
 import type { PlanPeriod } from "@/lib/database.types";
 import { useCategories } from "@/features/categories/api";
-import { PERIOD_LABELS, PERIOD_ORDER, computeEndDate } from "./plan-meta";
+import { PERIOD_LABEL_KEYS, PERIOD_ORDER, computeEndDate } from "./plan-meta";
 import { useCreatePlan } from "./api";
 
 const NO_CATEGORY = "none";
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export function PlanFormDialog({ open, onOpenChange, defaultStartDate }: Props) {
+  const { t } = useI18n();
   const { data: categories } = useCategories();
   const create = useCreatePlan();
 
@@ -62,10 +64,10 @@ export function PlanFormDialog({ open, onOpenChange, defaultStartDate }: Props) 
         end_date: endDate,
         category_id: categoryId === NO_CATEGORY ? null : categoryId,
       });
-      toast.success("Plan takvime eklendi");
+      toast.success(t("planForm.added"));
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
+      toast.error(err instanceof Error ? err.message : t("taskForm.failed"));
     }
   };
 
@@ -73,22 +75,22 @@ export function PlanFormDialog({ open, onOpenChange, defaultStartDate }: Props) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Yeni plan</DialogTitle>
+          <DialogTitle>{t("planForm.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="plan-title">Başlık</Label>
+            <Label htmlFor="plan-title">{t("taskForm.title")}</Label>
             <Input
               id="plan-title"
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="ör. Proje sprinti, Tatil"
+              placeholder={t("planForm.titlePlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Süre</Label>
+            <Label>{t("planForm.duration")}</Label>
             <div className="flex flex-wrap gap-2">
               {PERIOD_ORDER.map((p) => (
                 <button
@@ -102,14 +104,14 @@ export function PlanFormDialog({ open, onOpenChange, defaultStartDate }: Props) 
                       : "hover:bg-accent",
                   )}
                 >
-                  {PERIOD_LABELS[p]}
+                  {t(PERIOD_LABEL_KEYS[p])}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="plan-start">Başlangıç günü</Label>
+            <Label htmlFor="plan-start">{t("planForm.startDay")}</Label>
             <Input
               id="plan-start"
               type="date"
@@ -119,13 +121,15 @@ export function PlanFormDialog({ open, onOpenChange, defaultStartDate }: Props) 
           </div>
 
           <div className="space-y-1.5">
-            <Label>Kategori</Label>
+            <Label>{t("taskForm.category")}</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_CATEGORY}>Kategorisiz</SelectItem>
+                <SelectItem value={NO_CATEGORY}>
+                  {t("tasks.noCategory")}
+                </SelectItem>
                 {categories?.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -145,10 +149,10 @@ export function PlanFormDialog({ open, onOpenChange, defaultStartDate }: Props) 
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Vazgeç
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={create.isPending || !title.trim()}>
-              Ekle
+              {t("common.add")}
             </Button>
           </DialogFooter>
         </form>

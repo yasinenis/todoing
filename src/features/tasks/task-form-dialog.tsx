@@ -20,9 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Priority, Task } from "@/lib/database.types";
+import { useI18n } from "@/i18n";
 import { useCategories } from "@/features/categories/api";
 import { useGoals } from "@/features/goals/api";
-import { PRIORITY_LABELS } from "./task-meta";
+import { PRIORITY_LABEL_KEYS } from "./task-meta";
 import { useCreateTask, useUpdateTask } from "./api";
 
 const NO_CATEGORY = "none";
@@ -41,6 +42,7 @@ export function TaskFormDialog({
   task,
   defaultPlannedDate,
 }: Props) {
+  const { t } = useI18n();
   const { data: categories } = useCategories();
   const { data: goals } = useGoals();
   const create = useCreateTask();
@@ -81,15 +83,15 @@ export function TaskFormDialog({
     try {
       if (isEdit) {
         await update.mutateAsync({ id: task.id, ...payload });
-        toast.success("Görev güncellendi");
+        toast.success(t("taskForm.updated"));
       } else {
         await create.mutateAsync(payload);
         playSound("tap");
-        toast.success("Görev eklendi");
+        toast.success(t("taskForm.created"));
       }
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
+      toast.error(err instanceof Error ? err.message : t("taskForm.failed"));
     }
   };
 
@@ -99,39 +101,43 @@ export function TaskFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Görevi düzenle" : "Yeni görev"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? t("taskForm.editTitle") : t("taskForm.newTitle")}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="task-title">Başlık</Label>
+            <Label htmlFor="task-title">{t("taskForm.title")}</Label>
             <Input
               id="task-title"
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="ör. Sunumu hazırla"
+              placeholder={t("taskForm.titlePlaceholder")}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="task-notes">Not (opsiyonel)</Label>
+            <Label htmlFor="task-notes">{t("taskForm.notes")}</Label>
             <Textarea
               id="task-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Detaylar…"
+              placeholder={t("taskForm.notesPlaceholder")}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Kategori</Label>
+              <Label>{t("taskForm.category")}</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NO_CATEGORY}>Kategorisiz</SelectItem>
+                  <SelectItem value={NO_CATEGORY}>
+                    {t("tasks.noCategory")}
+                  </SelectItem>
                   {categories?.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
@@ -141,7 +147,7 @@ export function TaskFormDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Öncelik</Label>
+              <Label>{t("taskForm.priority")}</Label>
               <Select
                 value={priority}
                 onValueChange={(v) => setPriority(v as Priority)}
@@ -152,7 +158,7 @@ export function TaskFormDialog({
                 <SelectContent>
                   {(["low", "medium", "high"] as Priority[]).map((p) => (
                     <SelectItem key={p} value={p}>
-                      {PRIORITY_LABELS[p]}
+                      {t(PRIORITY_LABEL_KEYS[p])}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -162,7 +168,7 @@ export function TaskFormDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="task-planned">Planlanan gün</Label>
+              <Label htmlFor="task-planned">{t("taskForm.plannedDay")}</Label>
               <Input
                 id="task-planned"
                 type="date"
@@ -171,7 +177,7 @@ export function TaskFormDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="task-due">Son tarih</Label>
+              <Label htmlFor="task-due">{t("taskForm.dueDate")}</Label>
               <Input
                 id="task-due"
                 type="date"
@@ -182,13 +188,13 @@ export function TaskFormDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Hedefe bağla (opsiyonel)</Label>
+            <Label>{t("taskForm.linkGoal")}</Label>
             <Select value={goalId} onValueChange={setGoalId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_GOAL}>Hedefe bağlı değil</SelectItem>
+                <SelectItem value={NO_GOAL}>{t("taskForm.noGoal")}</SelectItem>
                 {goals?.map((g) => (
                   <SelectItem key={g.id} value={g.id}>
                     {g.title}
@@ -204,10 +210,10 @@ export function TaskFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Vazgeç
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={pending || !title.trim()}>
-              {isEdit ? "Kaydet" : "Ekle"}
+              {isEdit ? t("common.save") : t("common.add")}
             </Button>
           </DialogFooter>
         </form>

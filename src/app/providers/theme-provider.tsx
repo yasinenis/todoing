@@ -9,35 +9,35 @@ import {
 type Theme = "light" | "dark" | "system";
 export type Palette = "professional" | "masculine" | "feminine" | "emerald";
 
-/** Ayarlar ekranında gösterilen renk temaları. */
+/** Ayarlar ekranında gösterilen renk temaları. name/desc i18n anahtarıdır. */
 export const PALETTES: {
   id: Palette;
-  name: string;
-  desc: string;
+  nameKey: string;
+  descKey: string;
   swatch: [string, string, string];
 }[] = [
   {
     id: "professional",
-    name: "Profesyonel",
-    desc: "Nötr, sakin — herkese uygun",
+    nameKey: "palette.professional.name",
+    descKey: "palette.professional.desc",
     swatch: ["#3a5bc7", "#dbe3f7", "#1e2433"],
   },
   {
     id: "masculine",
-    name: "Okyanus",
-    desc: "Koyu mavi & teal, güçlü",
+    nameKey: "palette.masculine.name",
+    descKey: "palette.masculine.desc",
     swatch: ["#1273b8", "#bfe6f0", "#0c2f47"],
   },
   {
     id: "feminine",
-    name: "Gül",
-    desc: "Pembe & lavanta, yumuşak",
+    nameKey: "palette.feminine.name",
+    descKey: "palette.feminine.desc",
     swatch: ["#e0539c", "#ecd9fb", "#5e2a52"],
   },
   {
     id: "emerald",
-    name: "Zümrüt",
-    desc: "Doğal yeşil, dengeli",
+    nameKey: "palette.emerald.name",
+    descKey: "palette.emerald.desc",
     swatch: ["#1f9d6b", "#bff0d8", "#10402c"],
   },
 ];

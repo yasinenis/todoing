@@ -4,6 +4,8 @@ import { Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/providers/auth-provider";
+import { useI18n } from "@/i18n";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +29,7 @@ export function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { session } = useAuth();
+  const { t, lang, setLang } = useI18n();
   const navigate = useNavigate();
 
   // Kullanıcı adı uygunluğunu (debounce ile) denetle.
@@ -77,11 +80,11 @@ export function LoginPage() {
     e.preventDefault();
     if (mode === "signup") {
       if (usernameStatus !== "available") {
-        toast.error("Lütfen uygun bir kullanıcı adı seç.");
+        toast.error(t("auth.pickUsername"));
         return;
       }
       if (password !== confirmPassword) {
-        toast.error("Parolalar eşleşmiyor.");
+        toast.error(t("auth.passwordMismatch"));
         return;
       }
     }
@@ -104,17 +107,13 @@ export function LoginPage() {
         if (data.session) {
           navigate("/", { replace: true });
         } else {
-          toast.success(
-            "Kayıt oluşturuldu! E-postanı doğrulaman gerekebilir, sonra giriş yap.",
-          );
+          toast.success(t("auth.signupSuccess"));
           setMode("signin");
           setConfirmPassword("");
         }
       }
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Bir şeyler ters gitti.",
-      );
+      toast.error(err instanceof Error ? err.message : t("auth.genericError"));
     } finally {
       setLoading(false);
     }
@@ -131,9 +130,30 @@ export function LoginPage() {
           />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">TodoIng</h1>
-            <p className="text-sm text-muted-foreground">
-              Görevlerin, hedeflerin ve alışkanlıkların tek yerde.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("auth.tagline")}</p>
+          </div>
+
+          {/* Dil seçimi — kayıt/giriş bu dilde olur ve tercih saklanır. */}
+          <div
+            className="inline-flex rounded-full border p-0.5"
+            role="group"
+            aria-label={t("auth.language")}
+          >
+            {(["tr", "en"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  lang === l
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {l === "tr" ? "Türkçe" : "English"}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -142,7 +162,7 @@ export function LoginPage() {
             <form onSubmit={submit} className="space-y-4">
               {mode === "signup" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="username">Kullanıcı adı</Label>
+                  <Label htmlFor="username">{t("auth.username")}</Label>
                   <div className="relative">
                     <Input
                       id="username"
@@ -152,7 +172,7 @@ export function LoginPage() {
                       onChange={(e) =>
                         setUsername(e.target.value.replace(/\s/g, ""))
                       }
-                      placeholder="ornek_kullanici"
+                      placeholder={t("auth.usernamePlaceholder")}
                       className="pr-9"
                       aria-invalid={
                         usernameStatus === "taken" ||
@@ -180,18 +200,18 @@ export function LoginPage() {
                     }
                   >
                     {usernameStatus === "taken"
-                      ? "Bu kullanıcı adı alınmış."
+                      ? t("auth.usernameTaken")
                       : usernameStatus === "invalid"
-                        ? "3-20 karakter; harf, rakam ve alt çizgi."
+                        ? t("auth.usernameInvalid")
                         : usernameStatus === "available"
-                          ? "Uygun ✓"
-                          : "3-20 karakter; harf, rakam ve alt çizgi."}
+                          ? t("auth.usernameAvailable")
+                          : t("auth.usernameHint")}
                   </p>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="email">E-posta</Label>
+                <Label htmlFor="email">{t("auth.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -204,7 +224,7 @@ export function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="password">Parola</Label>
+                <Label htmlFor="password">{t("auth.password")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -221,7 +241,7 @@ export function LoginPage() {
 
               {mode === "signup" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="confirm">Parola (tekrar)</Label>
+                  <Label htmlFor="confirm">{t("auth.passwordConfirm")}</Label>
                   <Input
                     id="confirm"
                     type="password"
@@ -236,7 +256,7 @@ export function LoginPage() {
                   />
                   {mismatch && (
                     <p className="text-xs font-medium text-destructive">
-                      Parolalar eşleşmiyor.
+                      {t("auth.passwordMismatch")}
                     </p>
                   )}
                 </div>
@@ -244,21 +264,23 @@ export function LoginPage() {
 
               <Button type="submit" className="w-full" disabled={!canSubmit}>
                 {loading
-                  ? "Lütfen bekle…"
+                  ? t("auth.pleaseWait")
                   : mode === "signin"
-                    ? "Giriş yap"
-                    : "Kayıt ol"}
+                    ? t("auth.signin")
+                    : t("auth.signup")}
               </Button>
             </form>
 
             <div className="mt-4 text-center text-sm text-muted-foreground">
-              {mode === "signin" ? "Hesabın yok mu? " : "Zaten hesabın var mı? "}
+              {mode === "signin"
+                ? t("auth.noAccount")
+                : t("auth.haveAccount")}
               <button
                 type="button"
                 className="font-medium text-primary hover:underline"
                 onClick={switchMode}
               >
-                {mode === "signin" ? "Kayıt ol" : "Giriş yap"}
+                {mode === "signin" ? t("auth.signup") : t("auth.signin")}
               </button>
             </div>
           </CardContent>

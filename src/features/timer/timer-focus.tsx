@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn, formatDuration } from "@/lib/utils";
 import { playChime } from "@/lib/sound";
+import { useI18n } from "@/i18n";
 import { useTasks } from "@/features/tasks/api";
 import { useTimer, liveElapsedSeconds } from "./timer-provider";
 
@@ -27,6 +28,7 @@ export function TimerFocus() {
     stop,
   } = useTimer();
   const { data: tasks } = useTasks();
+  const { t } = useI18n();
   const [confirming, setConfirming] = useState(false);
 
   const task = tasks?.find((t) => t.id === activeTaskId);
@@ -49,8 +51,10 @@ export function TimerFocus() {
   useEffect(() => {
     if (!completed) return;
     playChime();
-    toast.success("Blok tamamlandı 🎉", {
-      description: `${Math.round((blockSeconds ?? 0) / 60)} dakikalık odak süresi doldu.`,
+    toast.success(t("focus.blockDoneToast"), {
+      description: t("focus.blockDoneDesc", {
+        min: Math.round((blockSeconds ?? 0) / 60),
+      }),
     });
     if (
       "Notification" in window &&
@@ -58,8 +62,8 @@ export function TimerFocus() {
       document.visibilityState !== "visible"
     ) {
       try {
-        new Notification("Blok tamamlandı 🎉", {
-          body: task?.title ?? "Odak süresi doldu",
+        new Notification(t("focus.blockDoneToast"), {
+          body: task?.title ?? t("focus.blockDoneBody"),
         });
       } catch {
         /* yok say */
@@ -89,10 +93,10 @@ export function TimerFocus() {
       <div className="relative z-10 flex w-full max-w-2xl flex-col items-center justify-center gap-8">
         <div className="text-center">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Odak modu
+            {t("focus.mode")}
           </p>
           <h2 className="mt-2 text-2xl font-bold md:text-4xl">
-            {task?.title ?? "Görev"}
+            {task?.title ?? t("focus.task")}
           </h2>
         </div>
 
@@ -144,32 +148,36 @@ export function TimerFocus() {
               completed ? (
                 <>
                   <p className="text-3xl font-bold md:text-5xl">
-                    Tamamlandı 🎉
+                    {t("focus.completed")}
                   </p>
                   <p className="mt-3 text-sm text-muted-foreground">
-                    {blockMin} dk hedef doldu · geçen{" "}
-                    {formatDuration(session, true)}
+                    {t("focus.targetDone", {
+                      min: blockMin,
+                      elapsed: formatDuration(session, true),
+                    })}
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="font-mono text-6xl font-bold tabular-nums md:text-8xl">
+                  <p className="text-7xl font-thin tabular-nums tracking-tight md:text-8xl">
                     {formatDuration(remaining, true)}
                   </p>
                   <p className="mt-3 text-sm text-muted-foreground">
-                    kalan · hedef {blockMin} dk{" "}
-                    {!isRunning && "· duraklatıldı"}
+                    {t("focus.remaining", { min: blockMin })}{" "}
+                    {!isRunning && t("focus.pausedSuffix")}
                   </p>
                 </>
               )
             ) : (
               <>
-                <p className="font-mono text-6xl font-bold tabular-nums md:text-8xl">
+                <p className="text-7xl font-thin tabular-nums tracking-tight md:text-8xl">
                   {formatDuration(session, true)}
                 </p>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  {isRunning ? "Çalışıyor" : "Duraklatıldı"} · bu konuda toplam{" "}
-                  {formatDuration(totalSeconds, true)}
+                  {isRunning ? t("focus.running") : t("focus.pausedShort")} ·{" "}
+                  {t("focus.totalOnTopic", {
+                    total: formatDuration(totalSeconds, true),
+                  })}
                 </p>
               </>
             )}
@@ -181,10 +189,10 @@ export function TimerFocus() {
           {confirming ? (
             <div className="w-full space-y-3 text-center">
               <p className="text-base font-medium">
-                Sayacı bitirmek istediğine emin misin?
+                {t("focus.confirmTitle")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Geçen süre göreve kaydedilecek.
+                {t("focus.confirmDesc")}
               </p>
               <div className="flex w-full items-center justify-center gap-3">
                 <Button
@@ -193,7 +201,7 @@ export function TimerFocus() {
                   className="h-14 flex-1 text-base"
                   onClick={() => setConfirming(false)}
                 >
-                  Vazgeç
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   size="lg"
@@ -201,7 +209,7 @@ export function TimerFocus() {
                   className="h-14 flex-1 text-base"
                   onClick={() => stop()}
                 >
-                  <Square className="h-5 w-5" /> Evet, bitir
+                  <Square className="h-5 w-5" /> {t("focus.confirmStop")}
                 </Button>
               </div>
             </div>
@@ -215,7 +223,7 @@ export function TimerFocus() {
                     className="h-16 flex-1 text-lg"
                     onClick={() => pause()}
                   >
-                    <Pause className="h-6 w-6" /> Duraklat
+                    <Pause className="h-6 w-6" /> {t("focus.pause")}
                   </Button>
                 ) : (
                   <Button
@@ -223,7 +231,7 @@ export function TimerFocus() {
                     className="h-16 flex-1 text-lg"
                     onClick={() => resume()}
                   >
-                    <Play className="h-6 w-6" /> Devam et
+                    <Play className="h-6 w-6" /> {t("focus.resume")}
                   </Button>
                 )}
                 <Button
@@ -232,12 +240,11 @@ export function TimerFocus() {
                   className="h-16 flex-1 text-lg"
                   onClick={() => setConfirming(true)}
                 >
-                  <Square className="h-6 w-6" /> Bitir
+                  <Square className="h-6 w-6" /> {t("focus.stop")}
                 </Button>
               </div>
               <p className="text-center text-xs text-muted-foreground">
-                Odak modu yalnızca "Bitir" ile kapanır. Süre kaydedilir;
-                görevin toplam süresi korunur.
+                {t("focus.hint")}
               </p>
             </>
           )}

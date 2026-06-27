@@ -22,9 +22,10 @@ import {
 import { cn } from "@/lib/utils";
 import { fromDayStr, formatLong, today } from "@/lib/date";
 import type { Goal, GoalTimeframe } from "@/lib/database.types";
+import { useI18n } from "@/i18n";
 import { useCategories } from "@/features/categories/api";
 import {
-  TIMEFRAME_LABELS,
+  TIMEFRAME_LABEL_KEYS,
   TIMEFRAME_ORDER,
   computeTargetDate,
   inferTimeframe,
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
+  const { t } = useI18n();
   const { data: categories } = useCategories();
   const create = useCreateGoal();
   const update = useUpdateGoal();
@@ -98,14 +100,14 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
     try {
       if (isEdit) {
         await update.mutateAsync({ id: goal.id, ...payload });
-        toast.success("Hedef güncellendi");
+        toast.success(t("goalForm.updated"));
       } else {
         await create.mutateAsync(payload);
-        toast.success("Hedef oluşturuldu");
+        toast.success(t("goalForm.created"));
       }
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
+      toast.error(err instanceof Error ? err.message : t("taskForm.failed"));
     }
   };
 
@@ -130,22 +132,24 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Hedefi düzenle" : "Yeni hedef"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? t("goalForm.editTitle") : t("goalForm.newTitle")}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="goal-title">Başlık</Label>
+            <Label htmlFor="goal-title">{t("taskForm.title")}</Label>
             <Input
               id="goal-title"
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="ör. 12 kitap oku"
+              placeholder={t("goalForm.titlePlaceholder")}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="goal-desc">Açıklama (opsiyonel)</Label>
+            <Label htmlFor="goal-desc">{t("goalForm.desc")}</Label>
             <Textarea
               id="goal-desc"
               value={description}
@@ -155,15 +159,15 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
 
           {/* Mod seçimi: hazır süre mi, serbest tarih aralığı mı */}
           <div className="flex gap-1 rounded-xl bg-muted p-1">
-            {modeBtn("preset", "Hazır süre")}
-            {modeBtn("custom", "Tarih aralığı")}
+            {modeBtn("preset", t("goalForm.modePreset"))}
+            {modeBtn("custom", t("goalForm.modeCustom"))}
           </div>
 
           {mode === "preset" ? (
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label>Zaman dilimi</Label>
+                  <Label>{t("goalForm.timeframe")}</Label>
                   <Select
                     value={timeframe}
                     onValueChange={(v) => setTimeframe(v as GoalTimeframe)}
@@ -174,14 +178,14 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
                     <SelectContent>
                       {TIMEFRAME_ORDER.map((tf) => (
                         <SelectItem key={tf} value={tf}>
-                          {TIMEFRAME_LABELS[tf]}
+                          {t(TIMEFRAME_LABEL_KEYS[tf])}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="goal-start">Başlangıç</Label>
+                  <Label htmlFor="goal-start">{t("goalForm.start")}</Label>
                   <Input
                     id="goal-start"
                     type="date"
@@ -193,7 +197,7 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
 
               {timeframe === "daily" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="goal-days">Kaç gün? (1-7)</Label>
+                  <Label htmlFor="goal-days">{t("goalForm.days")}</Label>
                   <Input
                     id="goal-days"
                     type="number"
@@ -208,7 +212,7 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
           ) : (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="goal-start-c">Başlangıç</Label>
+                <Label htmlFor="goal-start-c">{t("goalForm.start")}</Label>
                 <Input
                   id="goal-start-c"
                   type="date"
@@ -217,7 +221,7 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="goal-target-c">Bitiş (hedef)</Label>
+                <Label htmlFor="goal-target-c">{t("goalForm.endTarget")}</Label>
                 <Input
                   id="goal-target-c"
                   type="date"
@@ -231,22 +235,24 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
 
           {customInvalid ? (
             <div className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              Bitiş tarihini seç (başlangıçtan sonra olmalı).
+              {t("goalForm.invalidEnd")}
             </div>
           ) : (
             <div className="rounded-xl bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
-              Hedef tarihi: <strong>{formatLong(targetDate)}</strong>
+              {t("goalForm.targetDate")} <strong>{formatLong(targetDate)}</strong>
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label>Kategori</Label>
+            <Label>{t("taskForm.category")}</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_CATEGORY}>Kategorisiz</SelectItem>
+                <SelectItem value={NO_CATEGORY}>
+                  {t("tasks.noCategory")}
+                </SelectItem>
                 {categories?.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -258,9 +264,9 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
 
           <div className="flex items-center justify-between rounded-xl border p-3">
             <div>
-              <p className="text-sm font-medium">Otomatik ilerleme</p>
+              <p className="text-sm font-medium">{t("goalForm.autoProgress")}</p>
               <p className="text-xs text-muted-foreground">
-                İlerlemeyi bağlı görevlerin tamamlanmasından hesapla
+                {t("goalForm.autoProgressDesc")}
               </p>
             </div>
             <Switch checked={autoProgress} onCheckedChange={setAutoProgress} />
@@ -272,13 +278,13 @@ export function GoalFormDialog({ open, onOpenChange, goal }: Props) {
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Vazgeç
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
               disabled={pending || !title.trim() || customInvalid}
             >
-              {isEdit ? "Kaydet" : "Oluştur"}
+              {isEdit ? t("common.save") : t("common.create")}
             </Button>
           </DialogFooter>
         </form>

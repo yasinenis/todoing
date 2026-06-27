@@ -8,12 +8,13 @@ import {
 import { toDayStr } from "@/lib/date";
 import type { GoalTimeframe } from "@/lib/database.types";
 
-export const TIMEFRAME_LABELS: Record<GoalTimeframe, string> = {
-  daily: "Günlük",
-  weekly: "Haftalık",
-  monthly: "Aylık",
-  quarterly: "3 Aylık",
-  yearly: "Yıllık",
+/** Zaman dilimi etiketleri i18n anahtarı olarak; render'da t() ile çözülür. */
+export const TIMEFRAME_LABEL_KEYS: Record<GoalTimeframe, string> = {
+  daily: "timeframe.daily",
+  weekly: "timeframe.weekly",
+  monthly: "timeframe.monthly",
+  quarterly: "timeframe.quarterly",
+  yearly: "timeframe.yearly",
 };
 
 /** Hedefler sayfasında gösterim sırası. */

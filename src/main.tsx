@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { queryClient } from "@/lib/query-client";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { ThemeProvider } from "@/app/providers/theme-provider";
+import { I18nProvider } from "@/i18n";
 import { AuthProvider } from "@/app/providers/auth-provider";
 import { TimerProvider } from "@/features/timer/timer-provider";
 import { ElectronUpdateProvider } from "@/features/desktop/electron-update";
@@ -17,15 +18,18 @@ function Root() {
   if (!isSupabaseConfigured) {
     return (
       <ThemeProvider>
-        <SetupRequired />
-        <Toaster position="top-center" richColors />
+        <I18nProvider>
+          <SetupRequired />
+          <Toaster position="top-center" richColors />
+        </I18nProvider>
       </ThemeProvider>
     );
   }
 
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
+      <I18nProvider>
+        <QueryClientProvider client={queryClient}>
         <ElectronUpdateProvider>
           <AuthProvider>
             <TimerProvider>
@@ -35,6 +39,7 @@ function Root() {
         </ElectronUpdateProvider>
         <Toaster position="top-center" richColors />
       </QueryClientProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

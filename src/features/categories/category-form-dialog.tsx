@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { ColorPicker } from "@/components/color-picker";
 import { DEFAULT_CATEGORY_COLOR } from "@/lib/colors";
 import type { Category } from "@/lib/database.types";
+import { useI18n } from "@/i18n";
 import { useCreateCategory, useUpdateCategory } from "./api";
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export function CategoryFormDialog({ open, onOpenChange, category }: Props) {
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [color, setColor] = useState<string>(DEFAULT_CATEGORY_COLOR);
   const create = useCreateCategory();
@@ -41,14 +43,14 @@ export function CategoryFormDialog({ open, onOpenChange, category }: Props) {
     try {
       if (isEdit) {
         await update.mutateAsync({ id: category.id, name: name.trim(), color });
-        toast.success("Kategori güncellendi");
+        toast.success(t("categoryForm.updated"));
       } else {
         await create.mutateAsync({ name: name.trim(), color });
-        toast.success("Kategori oluşturuldu");
+        toast.success(t("categoryForm.created"));
       }
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
+      toast.error(err instanceof Error ? err.message : t("taskForm.failed"));
     }
   };
 
@@ -59,22 +61,22 @@ export function CategoryFormDialog({ open, onOpenChange, category }: Props) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Kategoriyi düzenle" : "Yeni kategori"}
+            {isEdit ? t("categoryForm.editTitle") : t("categoryForm.newTitle")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="cat-name">Ad</Label>
+            <Label htmlFor="cat-name">{t("habitForm.name")}</Label>
             <Input
               id="cat-name"
               value={name}
               autoFocus
               onChange={(e) => setName(e.target.value)}
-              placeholder="ör. İş, Spor, Okuma"
+              placeholder={t("categoryForm.namePlaceholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label>Renk</Label>
+            <Label>{t("habitForm.color")}</Label>
             <ColorPicker value={color} onChange={setColor} />
           </div>
           <DialogFooter>
@@ -83,10 +85,10 @@ export function CategoryFormDialog({ open, onOpenChange, category }: Props) {
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Vazgeç
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={pending || !name.trim()}>
-              {isEdit ? "Kaydet" : "Oluştur"}
+              {isEdit ? t("common.save") : t("common.create")}
             </Button>
           </DialogFooter>
         </form>

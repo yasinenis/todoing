@@ -1,10 +1,19 @@
 import { useState } from "react";
-import { Check, Monitor, Moon, RefreshCw, Sun, Volume2 } from "lucide-react";
+import {
+  Check,
+  Languages,
+  Monitor,
+  Moon,
+  RefreshCw,
+  Sun,
+  Volume2,
+} from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useTheme, PALETTES } from "@/app/providers/theme-provider";
+import { useI18n, type Lang } from "@/i18n";
 import { useAuth } from "@/app/providers/auth-provider";
 import { DownloadDesktopButton } from "@/features/desktop/download-desktop";
 import { isNativeApp } from "@/features/desktop/downloads";
@@ -14,13 +23,19 @@ import { getSoundEnabled, setSoundEnabled } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
-  { value: "light", label: "Açık", icon: Sun },
-  { value: "dark", label: "Koyu", icon: Moon },
-  { value: "system", label: "Sistem", icon: Monitor },
+  { value: "light", labelKey: "settings.theme.light", icon: Sun },
+  { value: "dark", labelKey: "settings.theme.dark", icon: Moon },
+  { value: "system", labelKey: "settings.theme.system", icon: Monitor },
 ] as const;
+
+const LANGS: { value: Lang; label: string }[] = [
+  { value: "tr", label: "Türkçe" },
+  { value: "en", label: "English" },
+];
 
 export function SettingsPage() {
   const { theme, setTheme, palette, setPalette } = useTheme();
+  const { t, lang, setLang } = useI18n();
   const { user, signOut } = useAuth();
   const update = useElectronUpdate();
   const [soundOn, setSoundOn] = useState(getSoundEnabled());
@@ -32,17 +47,17 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Ayarlar" description="Görünüm ve hesap tercihlerin." />
+      <PageHeader title={t("settings.title")} description={t("settings.desc")} />
 
       <ProfileCard />
 
       <Card>
         <CardHeader>
-          <CardTitle>Görünüm</CardTitle>
+          <CardTitle>{t("settings.appearance")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-3">
-            {THEMES.map(({ value, label, icon: Icon }) => (
+            {THEMES.map(({ value, labelKey, icon: Icon }) => (
               <button
                 key={value}
                 onClick={() => setTheme(value)}
@@ -54,7 +69,7 @@ export function SettingsPage() {
                 )}
               >
                 <Icon className="h-5 w-5" />
-                {label}
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -63,7 +78,38 @@ export function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Renk teması</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Languages className="h-5 w-5" />
+            {t("settings.language")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">
+            {t("settings.languageDesc")}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {LANGS.map((l) => (
+              <button
+                key={l.value}
+                onClick={() => setLang(l.value)}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-medium transition-colors",
+                  lang === l.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "hover:bg-accent",
+                )}
+              >
+                {l.label}
+                {lang === l.value && <Check className="h-4 w-4" />}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.colorTheme")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -88,9 +134,9 @@ export function SettingsPage() {
                   ))}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-medium">{p.name}</span>
+                  <span className="block font-medium">{t(p.nameKey)}</span>
                   <span className="block text-xs text-muted-foreground">
-                    {p.desc}
+                    {t(p.descKey)}
                   </span>
                 </span>
                 {palette === p.id && (
@@ -104,7 +150,7 @@ export function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Ses</CardTitle>
+          <CardTitle>{t("settings.sound")}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -112,16 +158,16 @@ export function SettingsPage() {
               <Volume2 className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-medium">Uygulama sesleri</p>
+              <p className="text-sm font-medium">{t("settings.appSounds")}</p>
               <p className="text-xs text-muted-foreground">
-                Görev/alışkanlık tamamlama, sayaç ve dokunma sesleri.
+                {t("settings.appSoundsDesc")}
               </p>
             </div>
           </div>
           <Switch
             checked={soundOn}
             onCheckedChange={toggleSound}
-            aria-label="Sesler"
+            aria-label={t("settings.sound")}
           />
         </CardContent>
       </Card>
@@ -129,12 +175,11 @@ export function SettingsPage() {
       {!isNativeApp() && (
         <Card>
           <CardHeader>
-            <CardTitle>Uygulamayı indir</CardTitle>
+            <CardTitle>{t("settings.download")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center justify-between gap-3">
             <p className="max-w-sm text-sm text-muted-foreground">
-              Windows, Linux, macOS veya Android (.apk) sürümünü indir. Hepsi
-              web ile aynı veriyi kullanır, senkron çalışır.
+              {t("settings.downloadDesc")}
             </p>
             <DownloadDesktopButton />
           </CardContent>
@@ -144,21 +189,21 @@ export function SettingsPage() {
       {update.supported && (
         <Card>
           <CardHeader>
-            <CardTitle>Uygulama güncellemeleri</CardTitle>
+            <CardTitle>{t("settings.updates")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-medium">
                 {update.downloaded
-                  ? `Yeni sürüm hazır${update.version ? ` (${update.version})` : ""}`
-                  : "Otomatik güncelleme açık"}
+                  ? `${t("settings.updateReady")}${update.version ? ` (${update.version})` : ""}`
+                  : t("settings.autoUpdateOn")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Yeni sürüm yayınlanınca otomatik indirilir; kapatınca kurulur.
+                {t("settings.updateDesc")}
               </p>
             </div>
             {update.downloaded ? (
-              <Button onClick={update.install}>Şimdi güncelle</Button>
+              <Button onClick={update.install}>{t("settings.updateNow")}</Button>
             ) : (
               <Button
                 variant="outline"
@@ -168,7 +213,9 @@ export function SettingsPage() {
                 <RefreshCw
                   className={cn("h-4 w-4", update.checking && "animate-spin")}
                 />
-                {update.checking ? "Denetleniyor…" : "Güncellemeleri denetle"}
+                {update.checking
+                  ? t("settings.checking")
+                  : t("settings.checkUpdates")}
               </Button>
             )}
           </CardContent>
@@ -177,15 +224,17 @@ export function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Hesap</CardTitle>
+          <CardTitle>{t("settings.account")}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{user?.email}</p>
-            <p className="text-xs text-muted-foreground">Giriş yapıldı</p>
+            <p className="text-xs text-muted-foreground">
+              {t("settings.signedIn")}
+            </p>
           </div>
           <Button variant="outline" onClick={() => signOut()}>
-            Çıkış yap
+            {t("common.signOut")}
           </Button>
         </CardContent>
       </Card>

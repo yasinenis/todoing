@@ -1,9 +1,10 @@
 import type { Priority, TaskStatus } from "@/lib/database.types";
 
-export const PRIORITY_LABELS: Record<Priority, string> = {
-  low: "Düşük",
-  medium: "Orta",
-  high: "Yüksek",
+/** Öncelik etiketleri i18n anahtarı olarak; render'da t() ile çözülür. */
+export const PRIORITY_LABEL_KEYS: Record<Priority, string> = {
+  low: "priority.low",
+  medium: "priority.medium",
+  high: "priority.high",
 };
 
 export const PRIORITY_BADGE: Record<
@@ -15,8 +16,8 @@ export const PRIORITY_BADGE: Record<
   high: "destructive",
 };
 
-export const STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: "Yapılacak",
-  in_progress: "Devam ediyor",
-  done: "Tamamlandı",
+export const STATUS_LABEL_KEYS: Record<TaskStatus, string> = {
+  todo: "status.todo",
+  in_progress: "status.inProgress",
+  done: "status.done",
 };

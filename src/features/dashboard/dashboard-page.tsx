@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Stagger, FadeUp } from "@/components/motion";
 import { formatDuration } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { formatLong, today } from "@/lib/date";
 import type { Category } from "@/lib/database.types";
 import { useTasks } from "@/features/tasks/api";
@@ -31,6 +32,7 @@ import { StatCard } from "./stat-card";
 import { quoteOfTheDay } from "./quotes";
 
 export function DashboardPage() {
+  const { t, lang } = useI18n();
   const entries = useTimeEntries();
   const { data: tasks } = useTasks();
   const { data: categories } = useCategories();
@@ -101,7 +103,7 @@ export function DashboardPage() {
         </span>
         <div className="min-w-0">
           <h2 className="truncate text-2xl font-bold tracking-tight">
-            Merhaba{greetName ? `, ${greetName}` : ""}
+            {greetName ? t("dash.helloName", { name: greetName }) : t("dash.hello")}
           </h2>
           <p className="text-sm text-muted-foreground">
             {formatLong(new Date())}
@@ -113,7 +115,7 @@ export function DashboardPage() {
       <Card className="border-primary/30 bg-gradient-to-br from-primary/10 to-accent/20">
         <CardContent className="flex items-center gap-3 p-4">
           <Sparkles className="h-5 w-5 shrink-0 text-primary" />
-          <p className="text-sm font-medium">{quoteOfTheDay()}</p>
+          <p className="text-sm font-medium">{quoteOfTheDay(lang)}</p>
         </CardContent>
       </Card>
 
@@ -122,7 +124,7 @@ export function DashboardPage() {
         <FadeUp>
           <StatCard
             icon={Clock}
-            label="Bugün çalışma"
+            label={t("dash.statWorkToday")}
             value={formatDuration(todaySeconds(workEntries), true)}
             color="#a78bfa"
           />
@@ -130,25 +132,25 @@ export function DashboardPage() {
         <FadeUp>
           <StatCard
             icon={CheckCircle2}
-            label="Bugün tamamlanan"
+            label={t("dash.statDoneToday")}
             value={`${doneToday}`}
-            hint="görev"
+            hint={t("dash.hintTask")}
             color="#34d399"
           />
         </FadeUp>
         <FadeUp>
           <StatCard
             icon={Flame}
-            label="En uzun aktif seri"
+            label={t("dash.statBestStreak")}
             value={`${bestCurrentStreak}`}
-            hint="gün"
+            hint={t("dash.hintDay")}
             color="#fb923c"
           />
         </FadeUp>
         <FadeUp>
           <StatCard
             icon={Target}
-            label="Aktif hedef"
+            label={t("dash.statActiveGoals")}
             value={`${activeGoals.length}`}
             color="#60a5fa"
           />
@@ -172,13 +174,13 @@ export function DashboardPage() {
 
         <div className="space-y-3">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Uzun vadeli hedefler
+            {t("dash.longTerm")}
           </h3>
           {longTermGoals.length === 0 ? (
             <EmptyState
               icon={Target}
-              title="Uzun vadeli hedef yok"
-              description="3 aylık veya yıllık bir hedef ekle; burada hep göz önünde olsun."
+              title={t("dash.longTermEmptyTitle")}
+              description={t("dash.longTermEmptyDesc")}
             />
           ) : (
             <div className="space-y-3">

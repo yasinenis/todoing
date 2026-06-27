@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { today } from "@/lib/date";
 import { playSound } from "@/lib/sound";
 import { hexToRgba } from "@/lib/colors";
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
+  const { t } = useI18n();
   const setLog = useSetHabitLog();
   const todayStr = today();
   const todayCount = logs.get(todayStr) ?? 0;
@@ -52,7 +54,7 @@ export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
             <div>
               <h3 className="font-semibold leading-tight">{habit.name}</h3>
               <p className="text-xs text-muted-foreground">
-                Günlük hedef: {target}
+                {t("habitCard.dailyTarget", { n: target })}
               </p>
             </div>
           </div>
@@ -64,7 +66,7 @@ export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
                 variant={complete ? "default" : "outline"}
                 onClick={() => setCount(complete ? 0 : 1)}
                 disabled={setLog.isPending}
-                aria-label="Bugünü işaretle"
+                aria-label={t("habitCard.markToday")}
               >
                 <Check className="h-4 w-4" />
               </Button>
@@ -76,7 +78,7 @@ export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
                   className="h-8 w-8"
                   onClick={() => setCount(Math.max(0, todayCount - 1))}
                   disabled={setLog.isPending || todayCount <= 0}
-                  aria-label="Azalt"
+                  aria-label={t("dash.decrease")}
                 >
                   <Minus className="h-3.5 w-3.5" />
                 </Button>
@@ -94,7 +96,7 @@ export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
                   className="h-8 w-8"
                   onClick={() => setCount(todayCount + 1)}
                   disabled={setLog.isPending}
-                  aria-label="Artır"
+                  aria-label={t("dash.increase")}
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </Button>
@@ -102,19 +104,23 @@ export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Daha fazla">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t("taskCard.more")}
+                >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onEdit(habit)}>
-                  <Pencil className="h-4 w-4" /> Düzenle
+                  <Pencil className="h-4 w-4" /> {t("common.edit")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => onDelete(habit)}
                 >
-                  <Trash2 className="h-4 w-4" /> Sil
+                  <Trash2 className="h-4 w-4" /> {t("common.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -122,9 +128,19 @@ export function HabitCard({ habit, logs, onEdit, onDelete }: Props) {
         </div>
 
         <div className="flex gap-4 text-sm">
-          <Stat label="Seri" value={`${current} gün`} accent={habit.color} />
-          <Stat label="En iyi" value={`${best} gün`} />
-          <Stat label="Son 30g" value={`%${rate}`} />
+          <Stat
+            label={t("habitCard.statStreak")}
+            value={t("habitCard.daysValue", { n: current })}
+            accent={habit.color}
+          />
+          <Stat
+            label={t("habitCard.statBest")}
+            value={t("habitCard.daysValue", { n: best })}
+          />
+          <Stat
+            label={t("habitCard.statLast30")}
+            value={t("common.percent", { n: rate })}
+          />
         </div>
 
         <ContributionHeatmap

@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Category } from "@/lib/database.types";
+import { useI18n } from "@/i18n";
 import { useCategories } from "./api";
 import { CategoryFormDialog } from "./category-form-dialog";
 import { DeleteCategoryDialog } from "./delete-category-dialog";
 
 export function CategoriesPage() {
+  const { t } = useI18n();
   const { data: categories, isLoading } = useCategories();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
@@ -28,11 +30,11 @@ export function CategoriesPage() {
   return (
     <div>
       <PageHeader
-        title="Kategoriler"
-        description="Görev, hedef ve planlarını renkli kategorilerle düzenle."
+        title={t("categories.title")}
+        description={t("categories.desc")}
         actions={
           <Button onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Yeni kategori
+            <Plus className="h-4 w-4" /> {t("categories.new")}
           </Button>
         }
       />
@@ -46,11 +48,11 @@ export function CategoriesPage() {
       ) : !categories?.length ? (
         <EmptyState
           icon={Tags}
-          title="Henüz kategori yok"
-          description="İlk kategorini oluştur; görev ve hedeflerini düzenli tut."
+          title={t("categories.emptyTitle")}
+          description={t("categories.emptyDesc")}
           action={
             <Button onClick={openCreate}>
-              <Plus className="h-4 w-4" /> Yeni kategori
+              <Plus className="h-4 w-4" /> {t("categories.new")}
             </Button>
           }
         />
@@ -73,7 +75,7 @@ export function CategoriesPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => openEdit(cat)}
-                  aria-label="Düzenle"
+                  aria-label={t("common.edit")}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -82,7 +84,7 @@ export function CategoriesPage() {
                   size="icon"
                   className="text-destructive hover:text-destructive"
                   onClick={() => setDeleting(cat)}
-                  aria-label="Sil"
+                  aria-label={t("common.delete")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

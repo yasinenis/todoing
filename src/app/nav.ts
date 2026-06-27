@@ -13,6 +13,7 @@ import {
 
 export interface NavItem {
   to: string;
+  /** i18n anahtarı (ör. "nav.dashboard"); render'da t() ile çözülür. */
   label: string;
   icon: LucideIcon;
   /** Mobil alt navigasyonda görünsün mü? */
@@ -20,15 +21,20 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { to: "/", label: "Panel", icon: LayoutDashboard, primary: true },
-  { to: "/tasks", label: "Görevler", icon: ListTodo, primary: true },
-  { to: "/timer", label: "Sayaç", icon: Timer, primary: false },
-  { to: "/goals", label: "Hedefler", icon: Target, primary: true },
-  { to: "/habits", label: "Alışkanlıklar", icon: Flame, primary: true },
-  { to: "/calendar", label: "Takvim", icon: CalendarDays, primary: true },
-  { to: "/leaderboard", label: "Liderlik", icon: Trophy, primary: false },
-  { to: "/categories", label: "Kategoriler", icon: Tags, primary: false },
-  { to: "/settings", label: "Ayarlar", icon: Settings, primary: false },
+  { to: "/", label: "nav.dashboard", icon: LayoutDashboard, primary: true },
+  { to: "/tasks", label: "nav.tasks", icon: ListTodo, primary: true },
+  { to: "/timer", label: "nav.timer", icon: Timer, primary: false },
+  { to: "/goals", label: "nav.goals", icon: Target, primary: true },
+  { to: "/habits", label: "nav.habits", icon: Flame, primary: true },
+  { to: "/calendar", label: "nav.calendar", icon: CalendarDays, primary: true },
+  {
+    to: "/leaderboard",
+    label: "nav.leaderboard",
+    icon: Trophy,
+    primary: false,
+  },
+  { to: "/categories", label: "nav.categories", icon: Tags, primary: false },
+  { to: "/settings", label: "nav.settings", icon: Settings, primary: false },
 ];
 
 export const PRIMARY_NAV = NAV_ITEMS.filter((i) => i.primary);

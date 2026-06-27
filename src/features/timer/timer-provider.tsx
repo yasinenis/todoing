@@ -21,6 +21,7 @@ import {
   clearNotification,
 } from "./timer-notification";
 import { useAuth } from "@/app/providers/auth-provider";
+import { useI18n } from "@/i18n";
 import type { Timer } from "@/lib/database.types";
 
 /** Sayacın bir oturumda biriken canlı süresini (saniye) hesaplar. */
@@ -56,6 +57,7 @@ const TimerContext = createContext<TimerContextValue | undefined>(undefined);
 export function TimerProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const { t } = useI18n();
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [isPending, setIsPending] = useState(false);
   const [blockSeconds, setBlockState] = useState<number | null>(() => {
@@ -251,15 +253,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         }
         invalidate(true);
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Sayaç başlatılamadı.",
-        );
+        toast.error(err instanceof Error ? err.message : t("timer.errStart"));
         invalidate(); // sunucudan gerçek durumu çek (geri al)
       } finally {
         setIsPending(false);
       }
     },
-    [readActive, setActive, commitSession, invalidate, blockSeconds],
+    [readActive, setActive, commitSession, invalidate, blockSeconds, t],
   );
 
   const pause = useCallback(async () => {
@@ -275,7 +275,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       updated_at: new Date(at).toISOString(),
     });
     playSound("pause");
-    showPausedNotification(`${formatDuration(accumulated, true)} · duraklatıldı`);
+    showPausedNotification(
+      t("timer.pausedNotif", { s: formatDuration(accumulated, true) }),
+    );
     setIsPending(true);
     try {
       const userId = await requireUserId();
@@ -291,12 +293,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       invalidate();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Duraklatılamadı.");
+      toast.error(err instanceof Error ? err.message : t("timer.errPause"));
       invalidate();
     } finally {
       setIsPending(false);
     }
-  }, [readActive, setActive, invalidate, blockSeconds]);
+  }, [readActive, setActive, invalidate, blockSeconds, t]);
 
   const resume = useCallback(async () => {
     const current = readActive();
@@ -324,12 +326,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       invalidate();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Devam ettirilemedi.");
+      toast.error(err instanceof Error ? err.message : t("timer.errResume"));
       invalidate();
     } finally {
       setIsPending(false);
     }
-  }, [readActive, setActive, invalidate, blockSeconds]);
+  }, [readActive, setActive, invalidate, blockSeconds, t]);
 
   const stop = useCallback(async () => {
     const current = readActive();
@@ -364,12 +366,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       invalidate(true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Bitirilemedi.");
+      toast.error(err instanceof Error ? err.message : t("timer.errStop"));
       invalidate();
     } finally {
       setIsPending(false);
     }
-  }, [readActive, setActive, setBlock, commitSession, invalidate]);
+  }, [readActive, setActive, setBlock, commitSession, invalidate, t]);
 
   const liveElapsed = liveElapsedSeconds(activeTimer, nowMs);
 

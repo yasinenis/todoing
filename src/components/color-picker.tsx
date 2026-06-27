@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { PALETTE } from "@/lib/colors";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 
 interface ColorPickerProps {
   value: string;
@@ -8,6 +9,7 @@ interface ColorPickerProps {
 }
 
 export function ColorPicker({ value, onChange }: ColorPickerProps) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap gap-2">
       {PALETTE.map((color) => {
@@ -17,7 +19,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
             key={color}
             type="button"
             onClick={() => onChange(color)}
-            aria-label={`Renk ${color}`}
+            aria-label={t("colorPicker.aria", { color })}
             className={cn(
               "flex h-8 w-8 items-center justify-center rounded-full ring-offset-2 ring-offset-background transition-transform hover:scale-110",
               selected && "ring-2 ring-foreground",

@@ -1,129 +1,134 @@
-import { useEffect, useMemo, useRef } from "react";
-import { format, isAfter, startOfDay } from "date-fns";
-import { tr } from "date-fns/locale";
+import { useState } from "react";
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isAfter,
+  isSameMonth,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
+import { enUS, tr } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toDayStr } from "@/lib/date";
 import { hexToRgba } from "@/lib/colors";
-import { buildWeeks, intensityLevel, LEVEL_OPACITY } from "./habit-stats";
+import { useI18n } from "@/i18n";
+import { Button } from "@/components/ui/button";
+import { intensityLevel, LEVEL_OPACITY } from "./habit-stats";
 
 interface Props {
   color: string;
   /** gün ("yyyy-MM-dd") → count */
   logs: Map<string, number>;
   target: number;
-  weeks?: number;
 }
 
-const CELL = 13;
-const GAP = 3;
-const GUTTER = 24;
-const WEEKDAY_LABELS = ["Pzt", "", "Çar", "", "Cum", "", ""];
-
-export function ContributionHeatmap({
-  color,
-  logs,
-  target,
-  weeks = 53,
-}: Props) {
-  const cols = useMemo(() => buildWeeks(weeks), [weeks]);
+/**
+ * Aylık alışkanlık ısı haritası. İçinde bulunulan ay öntanımlı; oklarla
+ * geçmiş aylara bakılır. Gelecek aya geçilemez.
+ */
+export function ContributionHeatmap({ color, logs, target }: Props) {
+  const { t, lang } = useI18n();
+  const locale = lang === "en" ? enUS : tr;
+  const weekdays = [0, 1, 2, 3, 4, 5, 6].map((i) => t(`heatmap.wd${i}`));
+  const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const todayStart = startOfDay(new Date());
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const atCurrentMonth = isSameMonth(month, new Date());
 
-  // Açılışta en sağa kaydır (bugün/son haftalar görünsün).
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollLeft = el.scrollWidth;
-  }, [cols]);
+  const days = eachDayOfInterval({
+    start: startOfWeek(startOfMonth(month), { weekStartsOn: 1 }),
+    end: endOfWeek(endOfMonth(month), { weekStartsOn: 1 }),
+  });
 
   return (
-    <div ref={scrollRef} className="overflow-x-auto pb-1">
-      <div className="inline-flex flex-col gap-1">
-        {/* Ay etiketleri */}
-        <div
-          className="flex text-[10px] text-muted-foreground"
-          style={{ gap: GAP, marginLeft: GUTTER }}
+    <div>
+      {/* Ay gezinme */}
+      <div className="mb-2 flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => setMonth((m) => addMonths(m, -1))}
+          aria-label={t("heatmap.prevMonth")}
         >
-          {cols.map((col, i) => {
-            const first = col[0];
-            const prev = cols[i - 1]?.[0];
-            const showMonth =
-              i === 0 || (prev && prev.getMonth() !== first.getMonth());
-            return (
-              <div
-                key={i}
-                style={{ width: CELL }}
-                className="overflow-visible whitespace-nowrap"
-              >
-                {showMonth ? format(first, "LLL", { locale: tr }) : ""}
-              </div>
-            );
-          })}
-        </div>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-medium capitalize">
+          {format(month, "LLLL yyyy", { locale })}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => setMonth((m) => addMonths(m, 1))}
+          disabled={atCurrentMonth}
+          aria-label={t("heatmap.nextMonth")}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
 
-        <div className="flex" style={{ gap: GAP }}>
-          {/* Gün etiketleri */}
+      {/* Gün başlıkları */}
+      <div className="mb-1 grid grid-cols-7 gap-1">
+        {weekdays.map((d, i) => (
           <div
-            className="flex flex-col text-[10px] text-muted-foreground"
-            style={{ gap: GAP, width: GUTTER }}
+            key={i}
+            className="text-center text-[10px] font-medium text-muted-foreground"
           >
-            {WEEKDAY_LABELS.map((d, i) => (
-              <div key={i} style={{ height: CELL, lineHeight: `${CELL}px` }}>
-                {d}
-              </div>
-            ))}
+            {d}
           </div>
+        ))}
+      </div>
 
-          {/* Hafta sütunları */}
-          {cols.map((col, ci) => (
-            <div key={ci} className="flex flex-col" style={{ gap: GAP }}>
-              {col.map((day) => {
-                const key = toDayStr(day);
-                const isFuture = isAfter(startOfDay(day), todayStart);
-                const count = logs.get(key) ?? 0;
-                const level = intensityLevel(count, target);
-                const bg = isFuture
-                  ? "transparent"
-                  : level === 0
-                    ? "hsl(var(--muted))"
-                    : hexToRgba(color, LEVEL_OPACITY[level]);
-                return (
-                  <div
-                    key={key}
-                    title={
-                      isFuture
-                        ? ""
-                        : `${format(day, "d MMM yyyy", { locale: tr })}: ${count}`
-                    }
-                    style={{
-                      width: CELL,
-                      height: CELL,
-                      backgroundColor: bg,
-                      borderRadius: 3,
-                      opacity: isFuture ? 0.3 : 1,
-                    }}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Açıklama */}
-        <div className="mt-1 flex items-center gap-1 self-end text-[10px] text-muted-foreground">
-          <span>az</span>
-          {LEVEL_OPACITY.map((op, i) => (
+      {/* Günler */}
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((day) => {
+          const inMonth = isSameMonth(day, month);
+          if (!inMonth) return <div key={day.toISOString()} />;
+          const future = isAfter(startOfDay(day), todayStart);
+          const count = logs.get(toDayStr(day)) ?? 0;
+          const level = intensityLevel(count, target);
+          const bg =
+            future || level === 0
+              ? "hsl(var(--muted))"
+              : hexToRgba(color, LEVEL_OPACITY[level]);
+          return (
             <div
-              key={i}
+              key={day.toISOString()}
+              title={`${format(day, "d MMM yyyy", { locale })}: ${count}`}
+              className="flex aspect-square items-center justify-center rounded-md text-[11px]"
               style={{
-                width: CELL,
-                height: CELL,
-                borderRadius: 3,
-                backgroundColor:
-                  i === 0 ? "hsl(var(--muted))" : hexToRgba(color, op),
+                backgroundColor: bg,
+                opacity: future ? 0.4 : 1,
+                color:
+                  level >= 3
+                    ? "#fff"
+                    : "hsl(var(--muted-foreground))",
               }}
-            />
-          ))}
-          <span>çok</span>
-        </div>
+            >
+              {format(day, "d")}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Açıklama */}
+      <div className="mt-2 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
+        <span>{t("heatmap.less")}</span>
+        {LEVEL_OPACITY.map((op, i) => (
+          <span
+            key={i}
+            className="h-3 w-3 rounded-sm"
+            style={{
+              backgroundColor:
+                i === 0 ? "hsl(var(--muted))" : hexToRgba(color, op),
+            }}
+          />
+        ))}
+        <span>{t("heatmap.more")}</span>
       </div>
     </div>
   );

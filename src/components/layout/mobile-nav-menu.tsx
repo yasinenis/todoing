@@ -8,11 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NAV_ITEMS } from "@/app/nav";
+import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 /** Mobilde tüm sayfalara erişim (alt navigasyonda olmayanlar dahil). */
 export function MobileNavMenu() {
   const { pathname } = useLocation();
+  const { t } = useI18n();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -20,7 +22,7 @@ export function MobileNavMenu() {
           variant="ghost"
           size="icon"
           className="md:hidden"
-          aria-label="Menü"
+          aria-label={t("topbar.menu")}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -35,7 +37,7 @@ export function MobileNavMenu() {
                 to={to}
                 className={cn(active && "text-primary font-medium")}
               >
-                <Icon className="h-4 w-4" /> {label}
+                <Icon className="h-4 w-4" /> {t(label)}
               </Link>
             </DropdownMenuItem>
           );

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { useTimer } from "./timer-provider";
 
 /** Hazır odak bloğu süreleri (dakika). */
@@ -24,6 +25,7 @@ function requestNotif() {
  * bir süre seçersen geri sayar (blok). "Özel" → kendi dakikan.
  */
 export function BlockChips({ className }: { className?: string }) {
+  const { t } = useI18n();
   const { blockSeconds, setBlock } = useTimer();
   const isPreset =
     blockSeconds != null && BLOCK_PRESETS.includes(blockSeconds / 60);
@@ -63,7 +65,7 @@ export function BlockChips({ className }: { className?: string }) {
         }}
         className={chip(blockSeconds == null)}
       >
-        Serbest (ileri)
+        {t("timer.modeFree")}
       </button>
 
       {BLOCK_PRESETS.map((m) => (
@@ -73,7 +75,7 @@ export function BlockChips({ className }: { className?: string }) {
           onClick={() => choosePreset(m)}
           className={chip(blockSeconds === m * 60)}
         >
-          {m} dk
+          {m} {t("timer.minSuffix")}
         </button>
       ))}
 
@@ -82,7 +84,7 @@ export function BlockChips({ className }: { className?: string }) {
         onClick={() => setShowCustom((s) => !s)}
         className={chip(customActive)}
       >
-        Özel
+        {t("timer.modeCustom")}
       </button>
 
       {showCustom && (
@@ -98,11 +100,11 @@ export function BlockChips({ className }: { className?: string }) {
                 applyCustom();
               }
             }}
-            placeholder="dk"
+            placeholder={t("timer.minPlaceholder")}
             className="h-9 w-20"
           />
           <Button type="button" size="sm" onClick={applyCustom}>
-            Ayarla
+            {t("timer.set")}
           </Button>
         </span>
       )}

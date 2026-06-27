@@ -10,12 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn, formatDuration } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { formatShort } from "@/lib/date";
 import { playSound } from "@/lib/sound";
 import { UNCATEGORIZED } from "@/lib/colors";
 import type { Category, Task } from "@/lib/database.types";
 import { useTimer } from "@/features/timer/timer-provider";
-import { PRIORITY_BADGE, PRIORITY_LABELS } from "./task-meta";
+import { PRIORITY_BADGE, PRIORITY_LABEL_KEYS } from "./task-meta";
 import { useToggleTaskDone } from "./api";
 
 interface Props {
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export function TaskCard({ task, category, onEdit, onDelete }: Props) {
+  const { t } = useI18n();
   const { activeTaskId, isRunning, liveElapsed, isPending, start, pause } =
     useTimer();
   const toggle = useToggleTaskDone();
@@ -34,7 +36,8 @@ export function TaskCard({ task, category, onEdit, onDelete }: Props) {
   const isThisRunning = isActive && isRunning;
   const total = task.total_seconds + (isActive ? liveElapsed : 0);
   const done = task.status === "done";
-  const cat = category ?? UNCATEGORIZED;
+  const catColor = category?.color ?? UNCATEGORIZED.color;
+  const catName = category ? category.name : t("tasks.noCategory");
 
   const onToggle = () => {
     playSound(done ? "tap" : "success");
@@ -52,7 +55,7 @@ export function TaskCard({ task, category, onEdit, onDelete }: Props) {
       <Checkbox
         checked={done}
         onCheckedChange={onToggle}
-        aria-label="Tamamlandı"
+        aria-label={t("taskCard.completed")}
       />
 
       <div className="min-w-0 flex-1">
@@ -63,15 +66,15 @@ export function TaskCard({ task, category, onEdit, onDelete }: Props) {
           <span className="flex items-center gap-1">
             <span
               className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: cat.color }}
+              style={{ backgroundColor: catColor }}
             />
-            {cat.name}
+            {catName}
           </span>
           <Badge
             variant={PRIORITY_BADGE[task.priority]}
             className="px-1.5 py-0 text-[10px]"
           >
-            {PRIORITY_LABELS[task.priority]}
+            {t(PRIORITY_LABEL_KEYS[task.priority])}
           </Badge>
           {task.due_date && (
             <span className="flex items-center gap-0.5">
@@ -94,7 +97,7 @@ export function TaskCard({ task, category, onEdit, onDelete }: Props) {
           className="h-8 w-8 shrink-0"
           onClick={() => (isThisRunning ? pause() : start(task.id))}
           disabled={isPending}
-          aria-label={isThisRunning ? "Duraklat" : "Sayacı başlat"}
+          aria-label={isThisRunning ? t("taskCard.pause") : t("taskCard.startTimer")}
         >
           {isThisRunning ? (
             <Pause className="h-4 w-4" />
@@ -110,20 +113,20 @@ export function TaskCard({ task, category, onEdit, onDelete }: Props) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 shrink-0"
-            aria-label="Daha fazla"
+            aria-label={t("taskCard.more")}
           >
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onEdit(task)}>
-            <Pencil className="h-4 w-4" /> Düzenle
+            <Pencil className="h-4 w-4" /> {t("common.edit")}
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={() => onDelete(task)}
           >
-            <Trash2 className="h-4 w-4" /> Sil
+            <Trash2 className="h-4 w-4" /> {t("common.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Category, Task, TimeEntry } from "@/lib/database.types";
+import { useI18n } from "@/i18n";
 import { ChartCard } from "./chart-card";
 import { buildWorkHours, type CatResolver, type WorkRange } from "./aggregations";
 
@@ -31,10 +32,12 @@ function ChartTooltip({
   payload?: TooltipItem[];
   label?: string;
 }) {
+  const { t } = useI18n();
   if (!active || !payload?.length) return null;
   const items = payload.filter((p) => (p.value ?? 0) > 0);
   if (items.length === 0) return null;
   const total = payload.reduce((s, p) => s + (p.value ?? 0), 0);
+  const h = t("chart.hoursAbbr");
   return (
     <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
       <p className="mb-1 font-medium">{label}</p>
@@ -47,11 +50,11 @@ function ChartTooltip({
             className="h-2 w-2 rounded-full"
             style={{ backgroundColor: p.color }}
           />
-          {p.name}: {p.value} sa
+          {p.name}: {p.value} {h}
         </p>
       ))}
       <p className="mt-1 border-t pt-1 font-medium">
-        Toplam: {Math.round(total * 100) / 100} sa
+        {t("chart.total")}: {Math.round(total * 100) / 100} {h}
       </p>
     </div>
   );
@@ -66,7 +69,9 @@ export function WorkHoursChart({
   tasks: Task[];
   categories: Category[];
 }) {
+  const { t } = useI18n();
   const [range, setRange] = useState<WorkRange>("daily");
+  const uncategorized = t("chart.uncategorized");
 
   const resolve = useMemo<CatResolver>(() => {
     const taskCat = new Map(tasks.map((t) => [t.id, t.category_id]));
@@ -77,9 +82,9 @@ export function WorkHoursChart({
         const c = catInfo.get(catId);
         if (c) return { key: c.id, name: c.name, color: c.color };
       }
-      return { key: "none", name: "Kategorisiz", color: UNCATEGORIZED_COLOR };
+      return { key: "none", name: uncategorized, color: UNCATEGORIZED_COLOR };
     };
-  }, [tasks, categories]);
+  }, [tasks, categories, uncategorized]);
 
   const { rows, series } = useMemo(
     () => buildWorkHours(entries, range, resolve),
@@ -88,21 +93,21 @@ export function WorkHoursChart({
 
   return (
     <ChartCard
-      title="Çalışma saatleri"
+      title={t("chart.workHours")}
       action={
         <Tabs value={range} onValueChange={(v) => setRange(v as WorkRange)}>
           <TabsList className="h-8">
             <TabsTrigger value="daily" className="px-2 text-xs">
-              Günlük
+              {t("chart.daily")}
             </TabsTrigger>
             <TabsTrigger value="weekly" className="px-2 text-xs">
-              Haftalık
+              {t("chart.weekly")}
             </TabsTrigger>
             <TabsTrigger value="yearly" className="px-2 text-xs">
-              Yıllık
+              {t("chart.yearly")}
             </TabsTrigger>
             <TabsTrigger value="all" className="px-2 text-xs">
-              Tüm
+              {t("chart.all")}
             </TabsTrigger>
           </TabsList>
         </Tabs>

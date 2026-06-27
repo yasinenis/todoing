@@ -7,14 +7,16 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Goal } from "@/lib/database.types";
+import { useI18n } from "@/i18n";
 import { useCategories } from "@/features/categories/api";
 import { useTasks } from "@/features/tasks/api";
 import { useGoals, useDeleteGoal } from "./api";
 import { GoalCard } from "./goal-card";
 import { GoalFormDialog } from "./goal-form-dialog";
-import { TIMEFRAME_LABELS, TIMEFRAME_ORDER } from "./goal-meta";
+import { TIMEFRAME_LABEL_KEYS, TIMEFRAME_ORDER } from "./goal-meta";
 
 export function GoalsPage() {
+  const { t } = useI18n();
   const { data: goals, isLoading } = useGoals();
   const { data: categories } = useCategories();
   const { data: tasks } = useTasks();
@@ -57,21 +59,21 @@ export function GoalsPage() {
     if (!deleting) return;
     try {
       await del.mutateAsync(deleting.id);
-      toast.success("Hedef silindi");
+      toast.success(t("goals.deleted"));
       setDeleting(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Silme başarısız");
+      toast.error(err instanceof Error ? err.message : t("tasks.deleteFailed"));
     }
   };
 
   return (
     <div>
       <PageHeader
-        title="Hedefler"
-        description="Günlük, aylık, 3 aylık ve yıllık hedeflerini hep göz önünde tut."
+        title={t("goals.title")}
+        description={t("goals.desc")}
         actions={
           <Button onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Yeni hedef
+            <Plus className="h-4 w-4" /> {t("goals.new")}
           </Button>
         }
       />
@@ -85,11 +87,11 @@ export function GoalsPage() {
       ) : !goals?.length ? (
         <EmptyState
           icon={Target}
-          title="Henüz hedef yok"
-          description="İlk hedefini belirle; ne kadar sürede gerçekleştireceğini seç ve ilerlemeni izle."
+          title={t("goals.emptyTitle")}
+          description={t("goals.emptyDesc")}
           action={
             <Button onClick={openCreate}>
-              <Plus className="h-4 w-4" /> Yeni hedef
+              <Plus className="h-4 w-4" /> {t("goals.new")}
             </Button>
           }
         />
@@ -98,7 +100,7 @@ export function GoalsPage() {
           {grouped.map(({ timeframe, items }) => (
             <section key={timeframe}>
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {TIMEFRAME_LABELS[timeframe]}
+                {t(TIMEFRAME_LABEL_KEYS[timeframe])}
               </h3>
               <div className="grid gap-3 md:grid-cols-2">
                 {items.map((goal) => (
@@ -134,9 +136,9 @@ export function GoalsPage() {
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(o) => !o && setDeleting(null)}
-        title={`"${deleting?.title}" silinsin mi?`}
-        description="Hedef silinir; bağlı görevler kalır (hedef bağlantısı kaldırılır)."
-        confirmLabel="Sil"
+        title={t("tasks.deleteTitle", { title: deleting?.title ?? "" })}
+        description={t("goals.deleteDesc")}
+        confirmLabel={t("common.delete")}
         destructive
         loading={del.isPending}
         onConfirm={confirmDelete}

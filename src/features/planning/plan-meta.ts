@@ -2,12 +2,13 @@ import { addDays, addMonths, addYears } from "date-fns";
 import { toDayStr } from "@/lib/date";
 import type { PlanPeriod } from "@/lib/database.types";
 
-export const PERIOD_LABELS: Record<PlanPeriod, string> = {
-  "1d": "1 gün",
-  "3d": "3 gün",
-  "1w": "1 hafta",
-  "1m": "1 ay",
-  "1y": "1 yıl",
+/** Dönem etiketleri i18n anahtarı olarak; render'da t() ile çözülür. */
+export const PERIOD_LABEL_KEYS: Record<PlanPeriod, string> = {
+  "1d": "period.1d",
+  "3d": "period.3d",
+  "1w": "period.1w",
+  "1m": "period.1m",
+  "1y": "period.1y",
 };
 
 export const PERIOD_ORDER: PlanPeriod[] = ["1d", "3d", "1w", "1m", "1y"];

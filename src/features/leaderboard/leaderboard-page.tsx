@@ -6,14 +6,15 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, formatDuration } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { avatarUrl, useMyProfile } from "@/features/profile/api";
 import { useLeaderboard, type LeaderboardPeriod } from "./api";
 
-const PERIODS: { value: LeaderboardPeriod; label: string }[] = [
-  { value: "daily", label: "Günlük" },
-  { value: "weekly", label: "Haftalık" },
-  { value: "monthly", label: "Aylık" },
-  { value: "yearly", label: "Yıllık" },
+const PERIODS: { value: LeaderboardPeriod; labelKey: string }[] = [
+  { value: "daily", labelKey: "lb.daily" },
+  { value: "weekly", labelKey: "lb.weekly" },
+  { value: "monthly", labelKey: "lb.monthly" },
+  { value: "yearly", labelKey: "lb.yearly" },
 ];
 
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -49,16 +50,14 @@ function Avatar({
 }
 
 export function LeaderboardPage() {
+  const { t } = useI18n();
   const [period, setPeriod] = useState<LeaderboardPeriod>("weekly");
   const { data: rows, isLoading } = useLeaderboard(period);
   const { data: me } = useMyProfile();
 
   return (
     <div>
-      <PageHeader
-        title="Liderlik"
-        description="En çok çalışanlar. Sıralamada görünmek için kullanıcı adı belirle."
-      />
+      <PageHeader title={t("lb.title")} description={t("lb.desc")} />
 
       <div className="mb-4">
         <Tabs
@@ -68,7 +67,7 @@ export function LeaderboardPage() {
           <TabsList>
             {PERIODS.map((p) => (
               <TabsTrigger key={p.value} value={p.value}>
-                {p.label}
+                {t(p.labelKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -84,8 +83,8 @@ export function LeaderboardPage() {
       ) : !rows?.length ? (
         <EmptyState
           icon={Trophy}
-          title="Henüz sıralama yok"
-          description="Bu dönemde kayıtlı çalışma yok. Sayaçla çalışınca burada görünürsün."
+          title={t("lb.emptyTitle")}
+          description={t("lb.emptyDesc")}
         />
       ) : (
         <div className="space-y-2">
@@ -105,10 +104,10 @@ export function LeaderboardPage() {
                 </span>
                 <Avatar path={row.avatar_path} name={row.username} />
                 <span className="min-w-0 flex-1 truncate font-medium">
-                  {row.username ?? "Anonim"}
+                  {row.username ?? t("lb.anon")}
                   {isMe && (
                     <span className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
-                      sen
+                      {t("lb.you")}
                     </span>
                   )}
                 </span>

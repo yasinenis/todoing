@@ -13,8 +13,9 @@ import {
 import { cn } from "@/lib/utils";
 import { formatLong, fromDayStr } from "@/lib/date";
 import { UNCATEGORIZED } from "@/lib/colors";
+import { useI18n } from "@/i18n";
 import type { Category, Goal } from "@/lib/database.types";
-import { TIMEFRAME_LABELS } from "./goal-meta";
+import { TIMEFRAME_LABEL_KEYS } from "./goal-meta";
 import { useUpdateGoal } from "./api";
 
 interface Props {
@@ -26,16 +27,11 @@ interface Props {
   onDelete: (goal: Goal) => void;
 }
 
-function remainingLabel(targetDate: string): { text: string; overdue: boolean } {
-  const days = differenceInCalendarDays(fromDayStr(targetDate), new Date());
-  if (days > 0) return { text: `${days} gün kaldı`, overdue: false };
-  if (days === 0) return { text: "Bugün son gün", overdue: false };
-  return { text: `${Math.abs(days)} gün gecikti`, overdue: true };
-}
-
 export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
+  const { t } = useI18n();
   const update = useUpdateGoal();
-  const cat = category ?? UNCATEGORIZED;
+  const catColor = category?.color ?? UNCATEGORIZED.color;
+  const catName = category ? category.name : t("tasks.noCategory");
 
   const progress = goal.auto_progress
     ? linked.total > 0
@@ -43,7 +39,17 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
       : 0
     : goal.progress;
 
-  const { text: remaining, overdue } = remainingLabel(goal.target_date);
+  const days = differenceInCalendarDays(
+    fromDayStr(goal.target_date),
+    new Date(),
+  );
+  const overdue = days < 0;
+  const remaining =
+    days > 0
+      ? t("goalCard.daysLeft", { n: days })
+      : days === 0
+        ? t("goalCard.lastDay")
+        : t("goalCard.overdue", { n: Math.abs(days) });
   const completed = progress >= 100;
 
   const setProgress = (next: number) => {
@@ -61,8 +67,12 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">{TIMEFRAME_LABELS[goal.timeframe]}</Badge>
-              {completed && <Badge variant="success">Tamamlandı</Badge>}
+              <Badge variant="secondary">
+                {t(TIMEFRAME_LABEL_KEYS[goal.timeframe])}
+              </Badge>
+              {completed && (
+                <Badge variant="success">{t("status.done")}</Badge>
+              )}
             </div>
             <h3 className="mt-1.5 truncate font-semibold">{goal.title}</h3>
             {goal.description && (
@@ -73,19 +83,23 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Daha fazla">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("taskCard.more")}
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit(goal)}>
-                <Pencil className="h-4 w-4" /> Düzenle
+                <Pencil className="h-4 w-4" /> {t("common.edit")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => onDelete(goal)}
               >
-                <Trash2 className="h-4 w-4" /> Sil
+                <Trash2 className="h-4 w-4" /> {t("common.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -96,7 +110,7 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
             <span className="font-medium">%{progress}</span>
             {goal.auto_progress && (
               <span className="text-xs text-muted-foreground">
-                {linked.done}/{linked.total} görev
+                {linked.done}/{linked.total} {t("dash.hintTask")}
               </span>
             )}
           </div>
@@ -111,9 +125,9 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
             <span className="flex items-center gap-1">
               <span
                 className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: cat.color }}
+                style={{ backgroundColor: catColor }}
               />
-              {cat.name}
+              {catName}
             </span>
             <span className={cn("flex items-center gap-1", overdue && "text-destructive")}>
               <Flag className="h-3 w-3" /> {remaining}
@@ -128,7 +142,7 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
                 className="h-7 w-7"
                 onClick={() => setProgress(progress - 10)}
                 disabled={update.isPending || progress <= 0}
-                aria-label="Azalt"
+                aria-label={t("dash.decrease")}
               >
                 <Minus className="h-3.5 w-3.5" />
               </Button>
@@ -138,7 +152,7 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
                 className="h-7 w-7"
                 onClick={() => setProgress(progress + 10)}
                 disabled={update.isPending || progress >= 100}
-                aria-label="Artır"
+                aria-label={t("dash.increase")}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -147,7 +161,7 @@ export function GoalCard({ goal, category, linked, onEdit, onDelete }: Props) {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Hedef: {formatLong(goal.target_date)}
+          {t("goalCard.target", { date: formatLong(goal.target_date) })}
         </p>
       </CardContent>
     </Card>

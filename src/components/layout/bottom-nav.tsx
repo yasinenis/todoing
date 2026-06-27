@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { PRIMARY_NAV } from "@/app/nav";
+import { useI18n } from "@/i18n";
 import { playSound } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
+  const { t } = useI18n();
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-card/95 backdrop-blur safe-bottom">
       <div className="grid grid-cols-5">
@@ -25,7 +27,7 @@ export function BottomNav() {
                 <Icon
                   className={cn("h-5 w-5", isActive && "fill-primary/15")}
                 />
-                {label}
+                {t(label)}
               </>
             )}
           </NavLink>

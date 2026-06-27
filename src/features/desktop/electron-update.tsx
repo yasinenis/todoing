@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/i18n";
 
 interface UpdaterApi {
   isElectron: boolean;
@@ -40,6 +41,7 @@ interface ElectronUpdateContextValue {
 const Ctx = createContext<ElectronUpdateContextValue | undefined>(undefined);
 
 export function ElectronUpdateProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const api = typeof window !== "undefined" ? window.electronUpdater : undefined;
   const supported = !!api;
   const [version, setVersion] = useState<string | null>(null);
@@ -53,22 +55,22 @@ export function ElectronUpdateProvider({ children }: { children: ReactNode }) {
     api.onAvailable((d) => {
       sawUpdate.current = true;
       setVersion(d.version);
-      toast("Güncelleme bulundu", {
-        description: `Sürüm ${d.version} indiriliyor…`,
+      toast(t("update.foundTitle"), {
+        description: t("update.foundDesc", { version: d.version }),
       });
     });
     api.onDownloaded((d) => {
       downloadedRef.current = true;
       setVersion(d.version);
       setDownloaded(true);
-      toast.success("Güncelleme hazır 🎉", {
-        description: `Sürüm ${d.version} indirildi. Şimdi kurabilirsin.`,
+      toast.success(t("update.readyTitle"), {
+        description: t("update.readyDesc", { version: d.version }),
         duration: 15000,
-        action: { label: "Şimdi güncelle", onClick: () => api.install() },
+        action: { label: t("update.installNow"), onClick: () => api.install() },
       });
     });
     // Arka plan hataları sessiz geçilir (ör. .deb/imzasız hedeflerde).
-  }, [api]);
+  }, [api, t]);
 
   const install = () => api?.install();
 
@@ -80,10 +82,12 @@ export function ElectronUpdateProvider({ children }: { children: ReactNode }) {
     setChecking(false);
     if (!res.ok) {
       if (res.error && res.error !== "dev") {
-        toast.message("Güncelleme denetlenemedi", {
-          description:
-            "Bu kurulum türünde otomatik güncelleme desteklenmiyor olabilir.",
-          action: { label: "Sürümleri aç", onClick: () => api.openReleases() },
+        toast.message(t("update.checkFailedTitle"), {
+          description: t("update.checkFailedDesc"),
+          action: {
+            label: t("update.openReleases"),
+            onClick: () => api.openReleases(),
+          },
         });
       }
       return;
@@ -91,7 +95,7 @@ export function ElectronUpdateProvider({ children }: { children: ReactNode }) {
     // 'update-available' tetiklenmezse güncel demektir.
     setTimeout(() => {
       if (!sawUpdate.current && !downloadedRef.current) {
-        toast("Uygulaman güncel ✓");
+        toast(t("update.upToDate"));
       }
     }, 1500);
   };

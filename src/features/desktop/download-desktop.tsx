@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import {
   DOWNLOADS,
   RELEASES_PAGE,
@@ -29,8 +30,9 @@ export function DownloadDesktopButton({
   variant = "outline",
   size,
   className,
-  label = "Uygulamayı indir",
+  label,
 }: Props) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   // Native uygulamanın (masaüstü/mobil) içindeysek indirme butonunu gösterme.
@@ -46,17 +48,14 @@ export function DownloadDesktopButton({
         className={className}
         onClick={() => setOpen(true)}
       >
-        <Monitor className="h-4 w-4" /> {label}
+        <Monitor className="h-4 w-4" /> {label ?? t("settings.download")}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Uygulamayı indir</DialogTitle>
-            <DialogDescription>
-              Platformunu seç; indirme hemen başlar. Veriler web ile senkron
-              çalışır.
-            </DialogDescription>
+            <DialogTitle>{t("settings.download")}</DialogTitle>
+            <DialogDescription>{t("download.dialogDesc")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2">
@@ -82,7 +81,7 @@ export function DownloadDesktopButton({
                       {d.label}
                       {isCurrent && (
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
-                          senin cihazın
+                          {t("download.yourDevice")}
                         </span>
                       )}
                     </span>
@@ -97,15 +96,14 @@ export function DownloadDesktopButton({
           </div>
 
           <p className="text-xs text-muted-foreground">
-            İmzasız kurulum olduğundan sistem "bilinmeyen yayıncı" uyarısı
-            gösterebilir; güvenle kurabilirsin.{" "}
+            {t("download.unsigned")}{" "}
             <a
               href={RELEASES_PAGE}
               target="_blank"
               rel="noreferrer"
               className="font-medium text-primary hover:underline"
             >
-              Tüm sürümler
+              {t("download.allReleases")}
             </a>
           </p>
         </DialogContent>

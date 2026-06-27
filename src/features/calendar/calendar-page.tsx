@@ -10,11 +10,12 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { tr } from "date-fns/locale";
+import { enUS, tr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Image as ImageIcon, Plus, Star } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { toDayStr } from "@/lib/date";
 import type { Category, DayEntry, Goal, Plan, Task } from "@/lib/database.types";
 import { useCategories } from "@/features/categories/api";
@@ -25,9 +26,10 @@ import { useDayEntries, useSignedPhotoUrls } from "./api";
 import { DayDetailDialog } from "./day-detail-dialog";
 import { PlanFormDialog } from "@/features/planning/plan-form-dialog";
 
-const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-
 export function CalendarPage() {
+  const { t, lang } = useI18n();
+  const locale = lang === "en" ? enUS : tr;
+  const weekdays = [0, 1, 2, 3, 4, 5, 6].map((i) => t(`heatmap.wd${i}`));
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [planOpen, setPlanOpen] = useState(false);
@@ -95,18 +97,18 @@ export function CalendarPage() {
   return (
     <div>
       <PageHeader
-        title="Takvim"
-        description="Planlarını gör, her güne değerlendirme ve fotoğraf ekle."
+        title={t("calendar.title")}
+        description={t("calendar.desc")}
         actions={
           <Button onClick={() => setPlanOpen(true)}>
-            <Plus className="h-4 w-4" /> Yeni plan
+            <Plus className="h-4 w-4" /> {t("calendar.newPlan")}
           </Button>
         }
       />
 
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold capitalize">
-          {format(month, "MMMM yyyy", { locale: tr })}
+          {format(month, "MMMM yyyy", { locale })}
         </h3>
         <div className="flex items-center gap-1">
           <Button
@@ -114,13 +116,13 @@ export function CalendarPage() {
             size="sm"
             onClick={() => setMonth(startOfMonth(new Date()))}
           >
-            Bugün
+            {t("calendar.today")}
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMonth((m) => addMonths(m, -1))}
-            aria-label="Önceki ay"
+            aria-label={t("heatmap.prevMonth")}
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -128,7 +130,7 @@ export function CalendarPage() {
             variant="ghost"
             size="icon"
             onClick={() => setMonth((m) => addMonths(m, 1))}
-            aria-label="Sonraki ay"
+            aria-label={t("heatmap.nextMonth")}
           >
             <ChevronRight className="h-5 w-5" />
           </Button>
@@ -136,9 +138,9 @@ export function CalendarPage() {
       </div>
 
       <div className="grid grid-cols-7 gap-1 md:gap-2">
-        {WEEKDAYS.map((d) => (
+        {weekdays.map((d, i) => (
           <div
-            key={d}
+            key={i}
             className="pb-1 text-center text-xs font-medium text-muted-foreground"
           >
             {d}

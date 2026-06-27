@@ -12,9 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { formatLong } from "@/lib/date";
 import type { Goal, Plan, Task } from "@/lib/database.types";
-import { PERIOD_LABELS } from "@/features/planning/plan-meta";
+import { PERIOD_LABEL_KEYS } from "@/features/planning/plan-meta";
 import {
   useDayEntry,
   useUpsertDayEntry,
@@ -34,6 +35,7 @@ interface Props {
 }
 
 export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Props) {
+  const { t } = useI18n();
   const entry = useDayEntry(day);
   const upsert = useUpsertDayEntry();
   const fileInput = useRef<HTMLInputElement>(null);
@@ -95,10 +97,10 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
         reflection: reflection.trim() || null,
         photo_path: nextPath,
       });
-      toast.success("Gün kaydedildi");
+      toast.success(t("dayDetail.saved"));
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Kaydetme başarısız");
+      toast.error(err instanceof Error ? err.message : t("dayDetail.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -125,7 +127,7 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
                 <CalendarClock className="h-4 w-4 text-primary" />
                 <span className="flex-1 truncate">{p.title}</span>
                 <span className="text-xs text-muted-foreground">
-                  {PERIOD_LABELS[p.period]}
+                  {t(PERIOD_LABEL_KEYS[p.period])}
                 </span>
               </div>
             ))}
@@ -151,7 +153,9 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
                 className="flex items-center gap-2 rounded-lg bg-accent/40 px-3 py-1.5 text-sm"
               >
                 <Flag className="h-4 w-4 text-primary" />
-                <span className="flex-1 truncate">Hedef: {g.title}</span>
+                <span className="flex-1 truncate">
+                  {t("dayDetail.goal", { title: g.title })}
+                </span>
               </div>
             ))}
           </div>
@@ -160,14 +164,14 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
         {/* Değerlendirme */}
         <div className="space-y-4 border-t pt-4">
           <div className="space-y-1.5">
-            <Label>Günü puanla</Label>
+            <Label>{t("dayDetail.rateDay")}</Label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setRating(rating === n ? 0 : n)}
-                  aria-label={`${n} yıldız`}
+                  aria-label={t("dayDetail.stars", { n })}
                 >
                   <Star
                     className={cn(
@@ -183,7 +187,7 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
           </div>
 
           <div className="space-y-1.5">
-            <Label>Mood</Label>
+            <Label>{t("dayDetail.mood")}</Label>
             <div className="flex gap-2">
               {MOODS.map((m) => (
                 <button
@@ -202,19 +206,19 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="reflection">Günün değerlendirmesi</Label>
+            <Label htmlFor="reflection">{t("dayDetail.reflection")}</Label>
             <Textarea
               id="reflection"
               value={reflection}
               onChange={(e) => setReflection(e.target.value)}
-              placeholder="Bugün nasıldı? Ne öğrendin, neye minnettarsın?"
+              placeholder={t("dayDetail.reflectionPlaceholder")}
               className="min-h-[100px]"
             />
           </div>
 
           {/* Günün fotoğrafı */}
           <div className="space-y-1.5">
-            <Label>Günün fotoğrafı</Label>
+            <Label>{t("dayDetail.photo")}</Label>
             <input
               ref={fileInput}
               type="file"
@@ -227,14 +231,14 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
               <div className="relative overflow-hidden rounded-xl border">
                 <img
                   src={showPhoto}
-                  alt="Günün fotoğrafı"
+                  alt={t("dayDetail.photo")}
                   className="max-h-64 w-full object-cover"
                 />
                 <button
                   type="button"
                   onClick={clearPhoto}
                   className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white hover:bg-black/80"
-                  aria-label="Fotoğrafı kaldır"
+                  aria-label={t("dayDetail.removePhoto")}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -246,7 +250,7 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
                 className="w-full"
                 onClick={() => fileInput.current?.click()}
               >
-                <ImagePlus className="h-4 w-4" /> Fotoğraf ekle
+                <ImagePlus className="h-4 w-4" /> {t("dayDetail.addPhoto")}
               </Button>
             )}
           </div>
@@ -254,10 +258,10 @@ export function DayDetailDialog({ day, onOpenChange, plans, tasks, goals }: Prop
 
         <DialogFooter className="border-t pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Kapat
+            {t("common.close")}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? "Kaydediliyor…" : "Kaydet"}
+            {saving ? t("dayDetail.saving") : t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

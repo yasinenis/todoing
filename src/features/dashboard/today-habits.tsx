@@ -2,6 +2,7 @@ import { Check, Flame, Minus, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import { today } from "@/lib/date";
 import { playSound } from "@/lib/sound";
 import { hexToRgba } from "@/lib/colors";
@@ -9,6 +10,7 @@ import { useHabits, useHabitLogs, useSetHabitLog } from "@/features/habits/api";
 
 /** Panelde bugün yapılması beklenen alışkanlıklar; buradan işaretlenebilir. */
 export function TodayHabits() {
+  const { t } = useI18n();
   const { data: habits } = useHabits();
   const { data: logs } = useHabitLogs();
   const setLog = useSetHabitLog();
@@ -32,7 +34,7 @@ export function TodayHabits() {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">Bugünün alışkanlıkları</CardTitle>
+        <CardTitle className="text-base">{t("dash.todayHabits")}</CardTitle>
         <span className="text-sm text-muted-foreground">
           {doneCount}/{visible.length}
         </span>
@@ -71,7 +73,7 @@ export function TodayHabits() {
                   className="h-8 w-8 shrink-0"
                   onClick={() => mark(h.id, done ? 0 : 1, 1, cur)}
                   disabled={setLog.isPending}
-                  aria-label="Yaptım"
+                  aria-label={t("dash.markDone")}
                 >
                   <Check className="h-4 w-4" />
                 </Button>
@@ -83,7 +85,7 @@ export function TodayHabits() {
                     className="h-7 w-7"
                     onClick={() => mark(h.id, cur - 1, h.target_per_day, cur)}
                     disabled={setLog.isPending || cur <= 0}
-                    aria-label="Azalt"
+                    aria-label={t("dash.decrease")}
                   >
                     <Minus className="h-3.5 w-3.5" />
                   </Button>
@@ -101,7 +103,7 @@ export function TodayHabits() {
                     className="h-7 w-7"
                     onClick={() => mark(h.id, cur + 1, h.target_per_day, cur)}
                     disabled={setLog.isPending}
-                    aria-label="Artır"
+                    aria-label={t("dash.increase")}
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </Button>

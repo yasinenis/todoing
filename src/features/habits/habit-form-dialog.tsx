@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { ColorPicker } from "@/components/color-picker";
 import { DEFAULT_HABIT_COLOR } from "@/lib/colors";
 import type { Habit } from "@/lib/database.types";
+import { useI18n } from "@/i18n";
 import { useCreateHabit, useUpdateHabit } from "./api";
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export function HabitFormDialog({ open, onOpenChange, habit }: Props) {
+  const { t } = useI18n();
   const create = useCreateHabit();
   const update = useUpdateHabit();
   const isEdit = !!habit;
@@ -48,18 +50,18 @@ export function HabitFormDialog({ open, onOpenChange, habit }: Props) {
           color,
           target_per_day: Math.max(1, target),
         });
-        toast.success("Alışkanlık güncellendi");
+        toast.success(t("habitForm.updated"));
       } else {
         await create.mutateAsync({
           name: name.trim(),
           color,
           target_per_day: Math.max(1, target),
         });
-        toast.success("Alışkanlık oluşturuldu");
+        toast.success(t("habitForm.created"));
       }
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "İşlem başarısız");
+      toast.error(err instanceof Error ? err.message : t("taskForm.failed"));
     }
   };
 
@@ -70,22 +72,22 @@ export function HabitFormDialog({ open, onOpenChange, habit }: Props) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Alışkanlığı düzenle" : "Yeni alışkanlık"}
+            {isEdit ? t("habitForm.editTitle") : t("habitForm.newTitle")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="habit-name">Ad</Label>
+            <Label htmlFor="habit-name">{t("habitForm.name")}</Label>
             <Input
               id="habit-name"
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="ör. Su iç, Spor, Oku"
+              placeholder={t("habitForm.namePlaceholder")}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="habit-target">Günlük hedef</Label>
+            <Label htmlFor="habit-target">{t("habitForm.dailyTarget")}</Label>
             <Input
               id="habit-target"
               type="number"
@@ -94,11 +96,11 @@ export function HabitFormDialog({ open, onOpenChange, habit }: Props) {
               onChange={(e) => setTarget(Number(e.target.value))}
             />
             <p className="text-xs text-muted-foreground">
-              Örn. günde 8 bardak su için 8 yaz. Tek seferlikse 1 bırak.
+              {t("habitForm.targetHint")}
             </p>
           </div>
           <div className="space-y-2">
-            <Label>Renk</Label>
+            <Label>{t("habitForm.color")}</Label>
             <ColorPicker value={color} onChange={setColor} />
           </div>
           <DialogFooter>
@@ -107,10 +109,10 @@ export function HabitFormDialog({ open, onOpenChange, habit }: Props) {
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Vazgeç
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={pending || !name.trim()}>
-              {isEdit ? "Kaydet" : "Oluştur"}
+              {isEdit ? t("common.save") : t("common.create")}
             </Button>
           </DialogFooter>
         </form>

@@ -9,9 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/app/providers/auth-provider";
+import { useI18n } from "@/i18n";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
+  const { t } = useI18n();
   if (!user) return null;
 
   return (
@@ -30,7 +32,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="h-4 w-4" />
-          Çıkış yap
+          {t("common.signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

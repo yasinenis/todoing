@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { Category, Task } from "@/lib/database.types";
 import { UNCATEGORIZED } from "@/lib/colors";
+import { useI18n } from "@/i18n";
 import { ChartCard } from "./chart-card";
 
 interface Slice {
@@ -17,6 +18,8 @@ export function CategoryDistribution({
   tasks: Task[];
   categories: Category[];
 }) {
+  const { t } = useI18n();
+  const uncategorized = t("chart.uncategorized");
   const data = useMemo<Slice[]>(() => {
     const counts = new Map<string, number>();
     for (const t of tasks) {
@@ -31,18 +34,18 @@ export function CategoryDistribution({
     const none = counts.get("none");
     if (none)
       slices.push({
-        name: UNCATEGORIZED.name,
+        name: uncategorized,
         value: none,
         color: UNCATEGORIZED.color,
       });
     return slices.sort((a, b) => b.value - a.value);
-  }, [tasks, categories]);
+  }, [tasks, categories, uncategorized]);
 
   return (
-    <ChartCard title="Görev dağılımı">
+    <ChartCard title={t("chart.taskDistribution")}>
       {data.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          Henüz görev yok.
+          {t("chart.noTasks")}
         </p>
       ) : (
         <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -62,7 +65,10 @@ export function CategoryDistribution({
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number, name: string) => [`${value} görev`, name]}
+                formatter={(value: number, name: string) => [
+                  `${value} ${t("chart.tasksUnit")}`,
+                  name,
+                ]}
                 contentStyle={{
                   borderRadius: 12,
                   border: "1px solid hsl(var(--border))",

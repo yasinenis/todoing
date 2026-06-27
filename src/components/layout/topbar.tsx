@@ -1,21 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
 import { Timer } from "lucide-react";
 import { NAV_ITEMS } from "@/app/nav";
+import { useI18n } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 import { MobileNavMenu } from "./mobile-nav-menu";
 
-function usePageTitle() {
+function usePageTitleKey() {
   const { pathname } = useLocation();
   const match = NAV_ITEMS.find((i) =>
     i.to === "/" ? pathname === "/" : pathname.startsWith(i.to),
   );
-  return match?.label ?? "TodoIng";
+  return match?.label ?? "app.name";
 }
 
 export function Topbar() {
-  const title = usePageTitle();
+  const { t } = useI18n();
+  const title = t(usePageTitleKey());
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b bg-background/80 px-4 backdrop-blur safe-top md:px-8">
       <div className="flex items-center gap-1.5">
@@ -33,7 +35,7 @@ export function Topbar() {
           variant="ghost"
           size="icon"
           className="rounded-full"
-          aria-label="Tam ekran sayaç"
+          aria-label={t("topbar.fullscreenTimer")}
         >
           <Link to="/timer">
             <Timer className="h-5 w-5" />

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/i18n";
 import {
   USERNAME_RE,
   avatarUrl,
@@ -14,6 +15,7 @@ import {
 } from "./api";
 
 export function ProfileCard() {
+  const { t } = useI18n();
   const { data: profile, isLoading } = useMyProfile();
   const updateUsername = useUpdateUsername();
   const uploadAvatar = useUploadAvatar();
@@ -35,34 +37,34 @@ export function ProfileCard() {
     if (!f) return;
     try {
       await uploadAvatar.mutateAsync(f);
-      toast.success("Profil fotoğrafı güncellendi");
+      toast.success(t("profile.photoUpdated"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Yükleme başarısız");
+      toast.error(err instanceof Error ? err.message : t("profile.uploadFailed"));
     }
   };
 
   const saveUsername = async () => {
     if (!valid) {
-      toast.error("3-20 karakter; harf, rakam ve alt çizgi.");
+      toast.error(t("auth.usernameInvalid"));
       return;
     }
     try {
       await updateUsername.mutateAsync(username);
-      toast.success("Kullanıcı adı kaydedildi");
+      toast.success(t("profile.usernameSaved"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Kaydedilemedi");
+      toast.error(err instanceof Error ? err.message : t("profile.saveFailed"));
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profil</CardTitle>
+        <CardTitle>{t("profile.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Yükleniyor…
+            <Loader2 className="h-4 w-4 animate-spin" /> {t("profile.loading")}
           </div>
         ) : (
           <>
@@ -71,7 +73,7 @@ export function ProfileCard() {
                 {url ? (
                   <img
                     src={url}
-                    alt="Profil"
+                    alt={t("profile.title")}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -92,16 +94,18 @@ export function ProfileCard() {
                   disabled={uploadAvatar.isPending}
                 >
                   <ImagePlus className="h-4 w-4" />
-                  {uploadAvatar.isPending ? "Yükleniyor…" : "Fotoğraf değiştir"}
+                  {uploadAvatar.isPending
+                    ? t("profile.uploading")
+                    : t("profile.changePhoto")}
                 </Button>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Liderlik tablosunda görünür.
+                  {t("profile.shownOnLeaderboard")}
                 </p>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="profile-username">Kullanıcı adı</Label>
+              <Label htmlFor="profile-username">{t("auth.username")}</Label>
               <div className="flex gap-2">
                 <Input
                   id="profile-username"
@@ -109,18 +113,18 @@ export function ProfileCard() {
                   onChange={(e) =>
                     setUsername(e.target.value.replace(/\s/g, ""))
                   }
-                  placeholder="kullanici_adi"
+                  placeholder={t("profile.usernamePlaceholder")}
                 />
                 <Button
                   onClick={saveUsername}
                   disabled={!dirty || !valid || updateUsername.isPending}
                 >
-                  Kaydet
+                  {t("common.save")}
                 </Button>
               </div>
               {!profile?.username && (
                 <p className="text-xs text-muted-foreground">
-                  Liderlik tablosunda görünmek için bir kullanıcı adı belirle.
+                  {t("profile.setUsernameHint")}
                 </p>
               )}
             </div>

@@ -1,8 +1,10 @@
 import { NavLink } from "react-router-dom";
 import { NAV_ITEMS } from "@/app/nav";
+import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
+  const { t } = useI18n();
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col border-r bg-card/50 px-3 py-4">
       <div className="flex items-center gap-2 px-3 pb-6">
@@ -30,7 +32,7 @@ export function Sidebar() {
             }
           >
             <Icon className="h-5 w-5" />
-            {label}
+            {t(label)}
           </NavLink>
         ))}
       </nav>
