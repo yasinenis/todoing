@@ -20,6 +20,12 @@ import {
   showPausedNotification,
   clearNotification,
 } from "./timer-notification";
+import {
+  hasDesktopMini,
+  updateDesktopMini,
+  setDesktopMiniActive,
+  onDesktopMiniCommand,
+} from "./desktop-popup";
 import { useAuth } from "@/app/providers/auth-provider";
 import { useI18n } from "@/i18n";
 import type { Timer } from "@/lib/database.types";
@@ -114,6 +120,23 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       playSound("hour");
     }
   }, [nowMs, isRunning, blockSeconds, activeTimer]);
+
+  // Masaüstü mini popup: sayaç durumunu (etiket moda göre) ana sürece gönder.
+  useEffect(() => {
+    if (!hasDesktopMini()) return;
+    const session = liveElapsedSeconds(activeTimer, nowMs);
+    const label =
+      blockSeconds != null
+        ? formatDuration(Math.max(0, blockSeconds - session), true)
+        : formatDuration(session, true);
+    updateDesktopMini(isRunning, label);
+  }, [nowMs, isRunning, blockSeconds, activeTimer]);
+
+  // Sayaç var/yok — popup yalnızca aktif sayaçta arka planda gösterilir.
+  useEffect(() => {
+    if (!hasDesktopMini()) return;
+    setDesktopMiniActive(!!activeTimer?.task_id);
+  }, [activeTimer?.task_id]);
 
   // Gerçek zamanlı senkron: başka cihazda yapılan değişiklikler anında yansısın.
   useEffect(() => {
@@ -372,6 +395,20 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       setIsPending(false);
     }
   }, [readActive, setActive, setBlock, commitSession, invalidate, t]);
+
+  // Mini popup butonları (pause/resume/stop) → ilgili aksiyonu çalıştır.
+  // Aksiyonları ref'te tut; dinleyici yalnızca bir kez (mount'ta) bağlanır.
+  const actionsRef = useRef({ pause, resume, stop });
+  actionsRef.current = { pause, resume, stop };
+  useEffect(() => {
+    if (!hasDesktopMini()) return;
+    onDesktopMiniCommand((a) => {
+      const cur = actionsRef.current;
+      if (a === "pause") void cur.pause();
+      else if (a === "resume") void cur.resume();
+      else if (a === "stop") void cur.stop();
+    });
+  }, []);
 
   const liveElapsed = liveElapsedSeconds(activeTimer, nowMs);
 

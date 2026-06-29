@@ -14,3 +14,14 @@ contextBridge.exposeInMainWorld("electronUpdater", {
   install: () => ipcRenderer.invoke("update:install"),
   openReleases: () => ipcRenderer.invoke("update:openReleases"),
 });
+
+// Mini sayaç popup'ı köprüsü (ana renderer → main).
+contextBridge.exposeInMainWorld("miniTimer", {
+  isElectron: true,
+  // Sayaç durumunu (çalışıyor mu + gösterilecek etiket) gönder.
+  update: (state) => ipcRenderer.invoke("mini:update", state),
+  // Sayaç var/yok (yoksa popup hiç çıkmaz).
+  setActive: (active) => ipcRenderer.invoke("mini:setActive", active),
+  // Popup'tan gelen komutlar (pause/resume/stop).
+  onCommand: (cb) => ipcRenderer.on("mini:command", (_e, a) => cb(a)),
+});
