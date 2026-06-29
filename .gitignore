@@ -25,5 +25,8 @@ pnpm-debug.log*
 dev-dist
 *.tsbuildinfo
 
+# Claude Code yerel ayarları (kişisel)
+.claude/settings.local.json
+
 # Electron build çıktıları
 release
