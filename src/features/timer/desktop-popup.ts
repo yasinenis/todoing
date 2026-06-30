@@ -4,9 +4,20 @@
 
 export type MiniCommand = "pause" | "resume" | "stop";
 
+/** Popup'a gönderilen ham durum — popup zamanı kendi içinde hesaplar. */
+export interface MiniState {
+  running: boolean;
+  /** Aktif oturumun başladığı an (epoch ms); duraklatıldıysa null. */
+  startedAtMs: number | null;
+  /** O ana kadar birikmiş süre (saniye). */
+  accumulatedSeconds: number;
+  /** Odak bloğu hedefi (saniye) — null ise serbest (ileri) sayaç. */
+  blockSeconds: number | null;
+}
+
 interface MiniTimerApi {
   isElectron: boolean;
-  update: (state: { running: boolean; label: string }) => void;
+  update: (state: MiniState) => void;
   setActive: (active: boolean) => void;
   onCommand: (cb: (action: MiniCommand) => void) => void;
 }
@@ -26,9 +37,9 @@ export function hasDesktopMini(): boolean {
   return !!api();
 }
 
-/** Sayaç durumunu (çalışıyor mu + gösterilecek etiket) popup'a gönderir. */
-export function updateDesktopMini(running: boolean, label: string): void {
-  api()?.update({ running, label });
+/** Sayaç ham durumunu popup'a gönderir (popup zamanı kendi sayar). */
+export function updateDesktopMini(state: MiniState): void {
+  api()?.update(state);
 }
 
 /** Sayaç var/yok — pasifken popup hiç gösterilmez. */

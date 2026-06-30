@@ -116,11 +116,51 @@
       const $card = document.getElementById("card");
       const $hide = document.getElementById("hide");
 
+      // Popup zamanı KENDİ İÇİNDE hesaplar (ana renderer arka planda kısılsa bile
+      // donmasın). Ham durum: başlangıç anı + birikmiş süre + mod.
+      let state = {
+        running: false,
+        startedAtMs: null,
+        accumulatedSeconds: 0,
+        blockSeconds: null,
+      };
+      let ticker = null;
+
+      const pad = (n) => String(n).padStart(2, "0");
+      function fmt(total) {
+        total = Math.max(0, Math.floor(total));
+        const h = Math.floor(total / 3600);
+        const m = Math.floor((total % 3600) / 60);
+        const s = total % 60;
+        return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+      }
+      function elapsedSeconds() {
+        const base = state.accumulatedSeconds || 0;
+        if (state.running && state.startedAtMs) {
+          return base + Math.max(0, (Date.now() - state.startedAtMs) / 1000);
+        }
+        return base;
+      }
+      function render() {
+        const e = elapsedSeconds();
+        $time.textContent =
+          state.blockSeconds != null
+            ? fmt(Math.max(0, state.blockSeconds - e))
+            : fmt(e);
+        $sub.textContent = state.running ? "Çalışıyor" : "Duraklatıldı";
+      }
+      function apply(s) {
+        if (s) state = s;
+        render();
+        if (ticker) {
+          clearInterval(ticker);
+          ticker = null;
+        }
+        if (state.running) ticker = setInterval(render, 250);
+      }
+
       if (window.mini) {
-        window.mini.onState((s) => {
-          $time.textContent = s.label || "00:00";
-          $sub.textContent = s.running ? "Çalışıyor" : "Duraklatıldı";
-        });
+        window.mini.onState(apply);
         // Popup'a tıklayınca uygulamayı öne getir.
         $card.addEventListener("click", () => window.mini.focusApp());
         // "Gizle" → popup'ı sakla (kart tıklamasını tetikleme).

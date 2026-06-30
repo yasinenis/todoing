@@ -121,16 +121,20 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [nowMs, isRunning, blockSeconds, activeTimer]);
 
-  // Masaüstü mini popup: sayaç durumunu (etiket moda göre) ana sürece gönder.
+  // Masaüstü mini popup: yalnızca durum DEĞİŞİNCE ham veriyi gönder; popup
+  // zamanı kendi içinde sayar (arka planda renderer kısılsa bile donmaz).
   useEffect(() => {
     if (!hasDesktopMini()) return;
-    const session = liveElapsedSeconds(activeTimer, nowMs);
-    const label =
-      blockSeconds != null
-        ? formatDuration(Math.max(0, blockSeconds - session), true)
-        : formatDuration(session, true);
-    updateDesktopMini(isRunning, label);
-  }, [nowMs, isRunning, blockSeconds, activeTimer]);
+    updateDesktopMini({
+      running: isRunning,
+      startedAtMs:
+        activeTimer?.running && activeTimer.started_at
+          ? Date.parse(activeTimer.started_at)
+          : null,
+      accumulatedSeconds: activeTimer?.accumulated_seconds ?? 0,
+      blockSeconds,
+    });
+  }, [isRunning, blockSeconds, activeTimer]);
 
   // Sayaç var/yok — popup yalnızca aktif sayaçta arka planda gösterilir.
   useEffect(() => {

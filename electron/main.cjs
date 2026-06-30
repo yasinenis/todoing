@@ -16,9 +16,14 @@ const MINI_W = 190;
 const MINI_H = 76;
 let mainWin = null;
 let miniWin = null;
-// Sayaç aktif mi + son durum (renderer'dan gelir). Popup yalnızca aktifken çıkar.
+// Sayaç aktif mi + son ham durum (renderer'dan gelir). Popup zamanı kendi sayar.
 let miniActive = false;
-let miniState = { running: false, label: "" };
+let miniState = {
+  running: false,
+  startedAtMs: null,
+  accumulatedSeconds: 0,
+  blockSeconds: null,
+};
 // "Gizle" ile ertelendi mi? Uygulamaya odaklanınca / yeni sayaçta sıfırlanır.
 let miniSnoozed = false;
 
@@ -142,6 +147,8 @@ function createWindow() {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
+      // Arka plandayken sayaç tiki/zamanlayıcılar kısılmasın (popup donmasın).
+      backgroundThrottling: false,
     },
   });
   mainWin = win;
@@ -191,9 +198,14 @@ ipcMain.handle("update:install", () => {
 ipcMain.handle("update:openReleases", () => shell.openExternal(RELEASES_PAGE));
 
 // IPC: mini sayaç popup'ı
-// Ana renderer canlı durumu gönderir; main popup'a iletir.
-ipcMain.handle("mini:update", (_e, state) => {
-  miniState = { running: !!state?.running, label: String(state?.label ?? "") };
+// Ana renderer ham durumu gönderir (durum değişince); main popup'a iletir.
+ipcMain.handle("mini:update", (_e, s) => {
+  miniState = {
+    running: !!s?.running,
+    startedAtMs: typeof s?.startedAtMs === "number" ? s.startedAtMs : null,
+    accumulatedSeconds: Number(s?.accumulatedSeconds) || 0,
+    blockSeconds: typeof s?.blockSeconds === "number" ? s.blockSeconds : null,
+  };
   if (miniWin && !miniWin.isDestroyed() && miniWin.isVisible()) {
     miniWin.webContents.send("mini:state", miniState);
   }
