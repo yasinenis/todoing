@@ -237,17 +237,51 @@ ipcMain.on("mini:hide", () => {
   hideMini();
 });
 
+// Renderer'a "duraklat" gönder (komut kanalı; pause() çalışmıyorsa yok sayar).
+function pauseFromLock() {
+  if (mainWin && !mainWin.isDestroyed()) {
+    mainWin.webContents.send("mini:command", "pause");
+  }
+}
+
+// Linux'ta Electron'un lock-screen olayı çoğu zaman tetiklenmez; ekran
+// koruyucu/kilit durumunu D-Bus ScreenSaver sinyaliyle (gdbus) izle.
+function setupLinuxLockWatch() {
+  const { spawn } = require("node:child_process");
+  const targets = ["org.gnome.ScreenSaver", "org.freedesktop.ScreenSaver"];
+  for (const dest of targets) {
+    let proc;
+    try {
+      proc = spawn("gdbus", ["monitor", "--session", "--dest", dest], {
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+    } catch {
+      continue; // gdbus yoksa bu hedefi atla
+    }
+    proc.on("error", () => {}); // gdbus bulunamazsa sessiz geç
+    proc.stdout.on("data", (buf) => {
+      // Kilit: "...ActiveChanged (true,)"  → sayacı duraklat
+      if (/ActiveChanged\s*\(true/i.test(buf.toString())) pauseFromLock();
+    });
+    app.on("before-quit", () => {
+      try {
+        proc.kill();
+      } catch {
+        /* yok say */
+      }
+    });
+  }
+}
+
+// Ekran kilitlenince çalışan sayacı duraklat (Win+L / macOS kilit / Linux lock).
+function setupLockWatch() {
+  powerMonitor.on("lock-screen", pauseFromLock); // Windows + macOS
+  if (process.platform === "linux") setupLinuxLockWatch();
+}
+
 app.whenReady().then(() => {
   createWindow();
-
-  // Ekran kilitlenince (Windows: Win+L, macOS: kilit) çalışan sayacı duraklat.
-  // Mevcut komut kanalını kullanır; renderer'daki pause() zaten "çalışmıyorsa
-  // yok say" güvenliğine sahip.
-  powerMonitor.on("lock-screen", () => {
-    if (mainWin && !mainWin.isDestroyed()) {
-      mainWin.webContents.send("mini:command", "pause");
-    }
-  });
+  setupLockWatch();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
