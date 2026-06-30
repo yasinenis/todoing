@@ -2,7 +2,8 @@
 // Üretimde dağıtılan web adresini yükler (web/PWA ile aynı Supabase → senkron).
 // Geliştirmede yerel Vite sunucusunu yükler.
 // electron-updater ile GitHub Releases'ten otomatik güncelleme yapar.
-const { app, BrowserWindow, screen, shell, ipcMain } = require("electron");
+const { app, BrowserWindow, screen, shell, ipcMain, powerMonitor } =
+  require("electron");
 const path = require("node:path");
 const { autoUpdater } = require("electron-updater");
 
@@ -238,6 +239,16 @@ ipcMain.on("mini:hide", () => {
 
 app.whenReady().then(() => {
   createWindow();
+
+  // Ekran kilitlenince (Windows: Win+L, macOS: kilit) çalışan sayacı duraklat.
+  // Mevcut komut kanalını kullanır; renderer'daki pause() zaten "çalışmıyorsa
+  // yok say" güvenliğine sahip.
+  powerMonitor.on("lock-screen", () => {
+    if (mainWin && !mainWin.isDestroyed()) {
+      mainWin.webContents.send("mini:command", "pause");
+    }
+  });
+
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
