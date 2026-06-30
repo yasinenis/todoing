@@ -53,7 +53,8 @@ interface TimerContextValue {
   start: (taskId: string) => Promise<void>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
-  stop: () => Promise<void>;
+  /** Sayacı bitirir; opsiyonel odak puanı (0-10) oturuma yazılır. */
+  stop: (focusScore?: number | null) => Promise<void>;
 }
 
 const BLOCK_KEY = "todoing-timer-block";
@@ -208,7 +209,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   /** Aktif oturumu time_entries'e yazar (task total_seconds trigger ile güncellenir). */
   const commitSession = useCallback(
-    async (timer: Timer, at: number, userId: string) => {
+    async (
+      timer: Timer,
+      at: number,
+      userId: string,
+      focusScore: number | null = null,
+    ) => {
       const elapsed = Math.round(liveElapsedSeconds(timer, at));
       if (timer.task_id && elapsed >= 1) {
         const ended = new Date(at);
@@ -220,6 +226,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
           ended_at: ended.toISOString(),
           duration_seconds: elapsed,
           day: toDayStr(ended),
+          focus_score: focusScore,
         });
         if (error) throw error;
       }
@@ -367,7 +374,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [readActive, setActive, invalidate, blockSeconds, t]);
 
-  const stop = useCallback(async () => {
+  const stop = useCallback(async (focusScore: number | null = null) => {
     const current = readActive();
     if (!current?.task_id) return;
     const at = Date.now();
@@ -386,7 +393,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     setIsPending(true);
     try {
       const userId = await requireUserId();
-      await commitSession(current, at, userId);
+      await commitSession(current, at, userId, focusScore);
       const { error } = await supabase
         .from("timers")
         .update({

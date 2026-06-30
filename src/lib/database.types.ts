@@ -100,6 +100,7 @@ export interface Database {
           ended_at: string;
           duration_seconds: number;
           day: string;
+          focus_score: number | null;
         };
         Insert: {
           id?: string;
@@ -109,6 +110,7 @@ export interface Database {
           ended_at: string;
           duration_seconds: number;
           day: string;
+          focus_score?: number | null;
         };
         Update: Partial<Database["public"]["Tables"]["time_entries"]["Insert"]>;
         Relationships: [];

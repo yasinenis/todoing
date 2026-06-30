@@ -149,6 +149,10 @@ const tr: Dict = {
   "focus.confirmTitle": "Sayacı bitirmek istediğine emin misin?",
   "focus.confirmDesc": "Geçen süre göreve kaydedilecek.",
   "focus.confirmStop": "Evet, bitir",
+  "focus.scoreQuestion": "Bu oturumda derse ne kadar odaklandın? (10 = sadece derse)",
+  "focus.scoreLow": "hiç",
+  "focus.scoreHigh": "tam",
+  "focus.skipScore": "Atla ve bitir",
   "focus.pause": "Duraklat",
   "focus.resume": "Devam et",
   "focus.stop": "Bitir",
@@ -185,6 +189,7 @@ const tr: Dict = {
   "chart.taskDistribution": "Görev dağılımı",
   "chart.noTasks": "Henüz görev yok.",
   "chart.tasksUnit": "görev",
+  "chart.focus": "Odak",
 
   "common.add": "Ekle",
 
@@ -577,6 +582,10 @@ const en: Dict = {
   "focus.confirmTitle": "Are you sure you want to stop the timer?",
   "focus.confirmDesc": "The elapsed time will be saved to the task.",
   "focus.confirmStop": "Yes, stop",
+  "focus.scoreQuestion": "How focused were you this session? (10 = only on study)",
+  "focus.scoreLow": "none",
+  "focus.scoreHigh": "full",
+  "focus.skipScore": "Skip & stop",
   "focus.pause": "Pause",
   "focus.resume": "Resume",
   "focus.stop": "Stop",
@@ -613,6 +622,7 @@ const en: Dict = {
   "chart.taskDistribution": "Task distribution",
   "chart.noTasks": "No tasks yet.",
   "chart.tasksUnit": "tasks",
+  "chart.focus": "Focus",
 
   "common.add": "Add",
 

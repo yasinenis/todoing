@@ -188,28 +188,42 @@ export function TimerFocus() {
         <div className="flex w-full max-w-md flex-col items-center gap-3">
           {confirming ? (
             <div className="w-full space-y-3 text-center">
-              <p className="text-base font-medium">
-                {t("focus.confirmTitle")}
-              </p>
+              <p className="text-base font-medium">{t("focus.confirmTitle")}</p>
               <p className="text-xs text-muted-foreground">
-                {t("focus.confirmDesc")}
+                {t("focus.scoreQuestion")}
               </p>
-              <div className="flex w-full items-center justify-center gap-3">
+              {/* 0-10 odak puanı — tek dokunuşla bitirir */}
+              <div className="flex flex-wrap items-center justify-center gap-1.5">
+                {Array.from({ length: 11 }).map((_, n) => (
+                  <button
+                    key={n}
+                    onClick={() => stop(n)}
+                    className="h-9 w-9 rounded-lg border text-sm font-medium tabular-nums transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-muted-foreground">
+                <span>{t("focus.scoreLow")}</span>
+                <span>{t("focus.scoreHigh")}</span>
+              </div>
+              <div className="flex w-full items-center justify-center gap-3 pt-1">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-14 flex-1 text-base"
+                  className="h-12 flex-1 text-sm"
                   onClick={() => setConfirming(false)}
                 >
                   {t("common.cancel")}
                 </Button>
                 <Button
                   size="lg"
-                  variant="destructive"
-                  className="h-14 flex-1 text-base"
-                  onClick={() => stop()}
+                  variant="secondary"
+                  className="h-12 flex-1 text-sm"
+                  onClick={() => stop(null)}
                 >
-                  <Square className="h-5 w-5" /> {t("focus.confirmStop")}
+                  <Square className="h-4 w-4" /> {t("focus.skipScore")}
                 </Button>
               </div>
             </div>

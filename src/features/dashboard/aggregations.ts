@@ -26,10 +26,12 @@ export interface WorkSeries {
   color: string;
 }
 export interface WorkChart {
-  /** Recharts satırları: { label, [catKey]: saat } */
-  rows: Array<Record<string, string | number>>;
+  /** Recharts satırları: { label, [catKey]: saat, focus: 0-10|null } */
+  rows: Array<Record<string, string | number | null>>;
   /** Grafikte görünen kategoriler (yığın sırası). */
   series: WorkSeries[];
+  /** En az bir kovada odak puanı var mı? (çizgiyi göstermek için) */
+  hasFocus: boolean;
 }
 
 const toHours = (seconds: number) => Math.round((seconds / 3600) * 100) / 100;
@@ -113,6 +115,9 @@ export function buildWorkHours(
   const acc = new Map<string, Map<string, number>>(); // bucket → cat → sn
   const catTotals = new Map<string, number>();
   const catInfo = new Map<string, CatResolved>();
+  // Odak puanı: kova başına süre-ağırlıklı ortalama (puansız oturumlar hariç).
+  const focusNum = new Map<string, number>(); // bucket → Σ(puan·süre)
+  const focusDen = new Map<string, number>(); // bucket → Σ(süre)
 
   for (const e of entries) {
     const bk = keyOf(e);
@@ -126,6 +131,11 @@ export function buildWorkHours(
       acc.set(bk, inner);
     }
     inner.set(cat.key, (inner.get(cat.key) ?? 0) + e.duration_seconds);
+
+    if (e.focus_score != null) {
+      focusNum.set(bk, (focusNum.get(bk) ?? 0) + e.focus_score * e.duration_seconds);
+      focusDen.set(bk, (focusDen.get(bk) ?? 0) + e.duration_seconds);
+    }
   }
 
   // Kategoriler toplam süreye göre sıralı (en çok çalışılan altta).
@@ -133,14 +143,22 @@ export function buildWorkHours(
     .sort((a, b) => b[1] - a[1])
     .map(([key]) => catInfo.get(key)!);
 
+  let hasFocus = false;
   const rows = defs.map(({ key, label }) => {
-    const row: Record<string, string | number> = { label };
+    const row: Record<string, string | number | null> = { label };
     const inner = acc.get(key);
     for (const s of series) row[s.key] = toHours(inner?.get(s.key) ?? 0);
+    const den = focusDen.get(key) ?? 0;
+    if (den > 0) {
+      hasFocus = true;
+      row.focus = Math.round(((focusNum.get(key) ?? 0) / den) * 10) / 10;
+    } else {
+      row.focus = null; // puan yoksa çizgide boşluk
+    }
     return row;
   });
 
-  return { rows, series };
+  return { rows, series, hasFocus };
 }
 
 /** Bugünün toplam çalışma saniyesi. */

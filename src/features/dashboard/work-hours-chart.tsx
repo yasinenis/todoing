@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import {
   Bar,
-  BarChart,
   CartesianGrid,
+  ComposedChart,
+  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -16,11 +17,13 @@ import { buildWorkHours, type CatResolver, type WorkRange } from "./aggregations
 
 const AXIS_COLOR = "#94a3b8";
 const UNCATEGORIZED_COLOR = "#a78bfa"; // kategori yoksa mor
+const FOCUS_COLOR = "#f59e0b"; // odak puanı çizgisi (amber)
 
 interface TooltipItem {
   name?: string;
   value?: number;
   color?: string;
+  dataKey?: string;
 }
 
 function ChartTooltip({
@@ -34,14 +37,19 @@ function ChartTooltip({
 }) {
   const { t } = useI18n();
   if (!active || !payload?.length) return null;
-  const items = payload.filter((p) => (p.value ?? 0) > 0);
-  if (items.length === 0) return null;
-  const total = payload.reduce((s, p) => s + (p.value ?? 0), 0);
+  // Saat kalemleri (kategoriler) ile odak puanını ayır.
+  const hourItems = payload.filter(
+    (p) => p.dataKey !== "focus" && (p.value ?? 0) > 0,
+  );
+  const focusItem = payload.find((p) => p.dataKey === "focus");
+  const focusVal = focusItem?.value;
+  if (hourItems.length === 0 && focusVal == null) return null;
+  const total = hourItems.reduce((s, p) => s + (p.value ?? 0), 0);
   const h = t("chart.hoursAbbr");
   return (
     <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
       <p className="mb-1 font-medium">{label}</p>
-      {items.map((p) => (
+      {hourItems.map((p) => (
         <p
           key={p.name}
           className="flex items-center gap-1.5 text-muted-foreground"
@@ -53,9 +61,23 @@ function ChartTooltip({
           {p.name}: {p.value} {h}
         </p>
       ))}
-      <p className="mt-1 border-t pt-1 font-medium">
-        {t("chart.total")}: {Math.round(total * 100) / 100} {h}
-      </p>
+      {hourItems.length > 0 && (
+        <p className="mt-1 border-t pt-1 font-medium">
+          {t("chart.total")}: {Math.round(total * 100) / 100} {h}
+        </p>
+      )}
+      {focusVal != null && (
+        <p
+          className="mt-1 flex items-center gap-1.5 font-medium"
+          style={{ color: FOCUS_COLOR }}
+        >
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: FOCUS_COLOR }}
+          />
+          {t("chart.focus")}: {focusVal}/10
+        </p>
+      )}
     </div>
   );
 }
@@ -86,7 +108,7 @@ export function WorkHoursChart({
     };
   }, [tasks, categories, uncategorized]);
 
-  const { rows, series } = useMemo(
+  const { rows, series, hasFocus } = useMemo(
     () => buildWorkHours(entries, range, resolve),
     [entries, range, resolve],
   );
@@ -114,7 +136,10 @@ export function WorkHoursChart({
       }
     >
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+        <ComposedChart
+          data={rows}
+          margin={{ top: 8, right: hasFocus ? 4 : 8, left: -16, bottom: 0 }}
+        >
           <CartesianGrid vertical={false} strokeOpacity={0.15} />
           <XAxis
             dataKey="label"
@@ -124,11 +149,24 @@ export function WorkHoursChart({
             interval="preserveEnd"
           />
           <YAxis
+            yAxisId="hours"
             tick={{ fontSize: 11, fill: AXIS_COLOR }}
             tickLine={false}
             axisLine={false}
             width={36}
             allowDecimals={false}
+          />
+          {/* Sağ eksen: odak puanı 0-10 (yalnızca puan varsa) */}
+          <YAxis
+            yAxisId="focus"
+            orientation="right"
+            domain={[0, 10]}
+            ticks={[0, 5, 10]}
+            width={24}
+            hide={!hasFocus}
+            tick={{ fontSize: 11, fill: FOCUS_COLOR }}
+            tickLine={false}
+            axisLine={false}
           />
           <Tooltip
             content={<ChartTooltip />}
@@ -137,6 +175,7 @@ export function WorkHoursChart({
           {series.map((s, i) => (
             <Bar
               key={s.key}
+              yAxisId="hours"
               dataKey={s.key}
               name={s.name}
               stackId="work"
@@ -147,11 +186,23 @@ export function WorkHoursChart({
               maxBarSize={42}
             />
           ))}
-        </BarChart>
+          {hasFocus && (
+            <Line
+              yAxisId="focus"
+              type="monotone"
+              dataKey="focus"
+              name={t("chart.focus")}
+              stroke={FOCUS_COLOR}
+              strokeWidth={2}
+              dot={{ r: 3, fill: FOCUS_COLOR }}
+              connectNulls
+            />
+          )}
+        </ComposedChart>
       </ResponsiveContainer>
 
-      {/* Kategori açıklaması */}
-      {series.length > 0 && (
+      {/* Açıklama: kategoriler + odak puanı */}
+      {(series.length > 0 || hasFocus) && (
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
           {series.map((s) => (
             <span
@@ -165,6 +216,15 @@ export function WorkHoursChart({
               {s.name}
             </span>
           ))}
+          {hasFocus && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: FOCUS_COLOR }}
+              />
+              {t("chart.focus")} (0-10)
+            </span>
+          )}
         </div>
       )}
     </ChartCard>
