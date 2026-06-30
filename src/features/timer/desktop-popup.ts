@@ -13,6 +13,8 @@ export interface MiniState {
   accumulatedSeconds: number;
   /** Odak bloğu hedefi (saniye) — null ise serbest (ileri) sayaç. */
   blockSeconds: number | null;
+  /** Hazır etiket (eski main süreçler için yedek; yeni popup ham veriyi sayar). */
+  label?: string;
 }
 
 interface MiniTimerApi {

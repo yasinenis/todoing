@@ -23,6 +23,7 @@ let miniState = {
   startedAtMs: null,
   accumulatedSeconds: 0,
   blockSeconds: null,
+  label: "",
 };
 // "Gizle" ile ertelendi mi? Uygulamaya odaklanınca / yeni sayaçta sıfırlanır.
 let miniSnoozed = false;
@@ -198,13 +199,16 @@ ipcMain.handle("update:install", () => {
 ipcMain.handle("update:openReleases", () => shell.openExternal(RELEASES_PAGE));
 
 // IPC: mini sayaç popup'ı
-// Ana renderer ham durumu gönderir (durum değişince); main popup'a iletir.
+// Ana renderer durumu gönderir; main popup'a iletir. Ham veri varsa popup kendi
+// sayar; yoksa (eski renderer) yalnızca `label` taşınır.
 ipcMain.handle("mini:update", (_e, s) => {
+  const hasRaw = typeof s?.accumulatedSeconds === "number";
   miniState = {
     running: !!s?.running,
     startedAtMs: typeof s?.startedAtMs === "number" ? s.startedAtMs : null,
-    accumulatedSeconds: Number(s?.accumulatedSeconds) || 0,
+    accumulatedSeconds: hasRaw ? s.accumulatedSeconds : undefined,
     blockSeconds: typeof s?.blockSeconds === "number" ? s.blockSeconds : null,
+    label: typeof s?.label === "string" ? s.label : undefined,
   };
   if (miniWin && !miniWin.isDestroyed() && miniWin.isVisible()) {
     miniWin.webContents.send("mini:state", miniState);

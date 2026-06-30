@@ -123,8 +123,14 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   // Masaüstü mini popup: yalnızca durum DEĞİŞİNCE ham veriyi gönder; popup
   // zamanı kendi içinde sayar (arka planda renderer kısılsa bile donmaz).
+  // Eski sürüm main süreçle uyum için hazır `label` de gönderilir (yedek).
   useEffect(() => {
     if (!hasDesktopMini()) return;
+    const session = liveElapsedSeconds(activeTimer, Date.now());
+    const label =
+      blockSeconds != null
+        ? formatDuration(Math.max(0, blockSeconds - session), true)
+        : formatDuration(session, true);
     updateDesktopMini({
       running: isRunning,
       startedAtMs:
@@ -133,6 +139,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
           : null,
       accumulatedSeconds: activeTimer?.accumulated_seconds ?? 0,
       blockSeconds,
+      label,
     });
   }, [isRunning, blockSeconds, activeTimer]);
 

@@ -134,6 +134,10 @@
         const s = total % 60;
         return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
       }
+      // Ham veri (kendi sayma) mı, yoksa yalnızca hazır etiket mi geldi?
+      function hasRaw() {
+        return typeof state.accumulatedSeconds === "number";
+      }
       function elapsedSeconds() {
         const base = state.accumulatedSeconds || 0;
         if (state.running && state.startedAtMs) {
@@ -142,11 +146,15 @@
         return base;
       }
       function render() {
-        const e = elapsedSeconds();
-        $time.textContent =
-          state.blockSeconds != null
-            ? fmt(Math.max(0, state.blockSeconds - e))
-            : fmt(e);
+        if (hasRaw()) {
+          const e = elapsedSeconds();
+          $time.textContent =
+            state.blockSeconds != null
+              ? fmt(Math.max(0, state.blockSeconds - e))
+              : fmt(e);
+        } else {
+          $time.textContent = state.label || "00:00";
+        }
         $sub.textContent = state.running ? "Çalışıyor" : "Duraklatıldı";
       }
       function apply(s) {
@@ -156,7 +164,9 @@
           clearInterval(ticker);
           ticker = null;
         }
-        if (state.running) ticker = setInterval(render, 250);
+        // Yalnızca ham veri modunda kendi kendine say; etiket modunda gelen
+        // güncellemelerle yenilenir.
+        if (hasRaw() && state.running) ticker = setInterval(render, 250);
       }
 
       if (window.mini) {
